@@ -1,0 +1,9 @@
+[submodule "src/third_party/json"]
+	path = src/third_party/json
+	url = https://github.com/nlohmann/json
+[submodule "src/third_party/gflags"]
+	path = src/third_party/gflags
+	url = https://github.com/gflags/gflags
+[submodule "src/third_party/googletest"]
+	path = src/third_party/googletest
+	url = https://github.com/google/googletest

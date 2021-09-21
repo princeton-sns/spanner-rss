@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+message TimestampMessage {
+    required uint64 id = 1;
+    required uint64 timestamp = 2;
+}
+
+message ReadMessage {
+    required string key = 1;
+    required TimestampMessage readtime = 2;
+}
+
+message WriteMessage {
+    required string key = 1;
+    required string value = 2;
+}
+
+message PingMessage {
+  required uint64 salt = 1;
+}
+
+// A serialized transaction
+message TransactionMessage {
+    required TimestampMessage starttime = 1;
+    repeated ReadMessage readset = 2;
+    repeated WriteMessage writeset = 3;
+}

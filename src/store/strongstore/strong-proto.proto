@@ -1,0 +1,169 @@
+syntax = "proto2";
+
+import "common-proto.proto";
+
+package strongstore.proto;
+
+message RequestIDMessage {
+    required uint64 client_id = 1;
+    required uint64 client_req_id = 2;
+}
+
+message Get {
+    required RequestIDMessage rid = 1;
+    required uint64 transaction_id = 2;
+    required string key = 3;
+    optional TimestampMessage timestamp = 4;
+    optional bool for_update = 5;
+}
+
+message GetReply {
+    required RequestIDMessage rid = 1;
+    // 0 = OK
+    // -1 = failed
+    // -2 = retry
+    // -3 = abstain/no reply
+    required int32 status = 2;
+    required string key = 3;
+    optional string val = 4;
+    optional TimestampMessage timestamp = 5;
+}
+
+message RWCommitCoordinator {
+    required RequestIDMessage rid = 1;
+    required uint64 transaction_id = 2;
+    required TransactionMessage transaction = 3;
+    required TimestampMessage nonblock_timestamp = 4;
+    repeated int32 participants = 5;
+}
+
+message RWCommitCoordinatorReply {
+    required RequestIDMessage rid = 1;
+    required int32 status = 2;
+    optional TimestampMessage commit_timestamp = 3;
+    optional TimestampMessage nonblock_timestamp = 4;
+}
+
+message RWCommitParticipant {
+    required RequestIDMessage rid = 1;
+    required uint64 transaction_id = 2;
+    required TransactionMessage transaction = 3;
+    required int32 coordinator_shard = 4;
+    required TimestampMessage nonblock_timestamp = 5;
+}
+
+message RWCommitParticipantReply {
+    required RequestIDMessage rid = 1;
+    required int32 status = 2;
+}
+
+message PrepareOK {
+    required RequestIDMessage rid = 1;
+    required uint64 transaction_id = 2;
+    required int32 participant_shard = 3;
+    required TimestampMessage prepare_timestamp = 4;
+    required TimestampMessage nonblock_timestamp = 5;
+}
+
+message PrepareOKReply {
+    required RequestIDMessage rid = 1;
+    required int32 status = 2;
+    optional TimestampMessage commit_timestamp = 3;
+}
+
+message PrepareAbort {
+    required RequestIDMessage rid = 1;
+    required uint64 transaction_id = 2;
+    required int32 participant_shard = 3;
+}
+
+message PrepareAbortReply {
+    required RequestIDMessage rid = 1;
+    required int32 status = 2;
+}
+
+message Abort {
+    required RequestIDMessage rid = 1;
+    required uint64 transaction_id = 2;
+    optional TransactionMessage transaction = 3;
+}
+
+message AbortReply {
+    required RequestIDMessage rid = 1;
+    required int32 status = 2;
+}
+
+message ROCommit {
+    required RequestIDMessage rid = 1;
+    required uint64 transaction_id = 2;
+    required TimestampMessage commit_timestamp = 3;
+    required TimestampMessage min_timestamp = 4;
+    repeated string keys = 5;
+}
+
+message ReadReply {
+    required uint64 transaction_id = 1;
+    required TimestampMessage timestamp = 2;
+    required string key = 3;
+    required string val = 4;
+}
+
+message PreparedTransactionMessage {
+    required uint64 transaction_id = 1;
+    required TimestampMessage prepare_timestamp = 2;
+    repeated WriteMessage write_set = 3;
+}
+
+message ROCommitReply {
+    required RequestIDMessage rid = 1;
+    required uint64 transaction_id = 2;
+    repeated ReadReply values = 3;
+    repeated PreparedTransactionMessage prepares = 4;
+}
+
+message ROCommitSlowReply {
+    required RequestIDMessage rid = 1;
+    required uint64 transaction_id = 2;
+    required TimestampMessage commit_timestamp = 3;
+    required bool is_commit = 4;
+}
+
+message Wound {
+    required uint64 transaction_id = 1;
+}
+
+message PrepareMessage {
+    required TransactionMessage txn = 1;
+    required TimestampMessage timestamp = 2;
+    required int32 coordinator = 3;
+    required TimestampMessage nonblock_ts = 5;
+    repeated int32 participants = 4;
+}
+
+message CommitMessage {
+    required TimestampMessage commit_timestamp = 1;
+}
+
+message Request {
+     enum Operation {
+          PREPARE = 1;
+          COMMIT = 2;
+          ABORT = 3;
+     }	
+     required Operation op = 1;
+     required uint64 txnid = 2;
+     optional PrepareMessage prepare = 3;
+     optional CommitMessage commit = 4;
+}
+
+message Reply {
+     // 0 = OK
+     // -1 = failed
+     // -2 = retry
+     // -3 = abstain/no reply
+     required int32 status = 1;
+     optional string value = 2;
+     optional uint64 timestamp = 3;
+     repeated uint64 notify_rws = 4;
+     repeated uint64 notify_ros = 5;
+}

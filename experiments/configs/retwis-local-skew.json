@@ -1,0 +1,248 @@
+{
+  "experiment_independent_vars": [
+    [
+      "consistency"
+    ]
+  ],
+  "replication_protocol": "strong",
+  "client_protocol_mode": "span-lock",
+  "server_names": [
+    "us-east-1-0",
+    "us-east-1-1",
+    "us-east-1-2",
+    "eu-west-1-0",
+    "eu-west-1-1",
+    "eu-west-1-2",
+    "ap-northeast-1-0",
+    "ap-northeast-1-1",
+    "ap-northeast-1-2"
+  ],
+  "consistency": [
+    "rss"
+  ],
+  "num_instances": 2,
+  "shard_config_format_str": "shard-%d.config",
+  "replica_config_format_str": "replica-%d.config",
+  "network_config": "network.json",
+  "fault_tolerance": 1,
+  "num_shards": 3,
+  "shards": [
+    [
+      "us-east-1-0",
+      "eu-west-1-0",
+      "ap-northeast-1-0"
+    ],
+    [
+      "us-east-1-0",
+      "eu-west-1-0",
+      "ap-northeast-1-0"
+    ],
+    [
+      "us-east-1-0",
+      "eu-west-1-0",
+      "ap-northeast-1-0"
+    ]
+  ],
+  "client_total": 1,
+  "client_processes_per_client_node": 1,
+  "client_threads_per_process": 1,
+  "clients": [
+    "client-0-0"
+  ],
+  "server_regions": {
+    "us-east-1": [
+      "us-east-1-0",
+      "us-east-1-1",
+      "us-east-1-2",
+      "client-0-0"
+    ],
+    "eu-west-1": [
+      "eu-west-1-0",
+      "eu-west-1-1",
+      "eu-west-1-2",
+      "client-1-0"
+    ],
+    "ap-northeast-1": [
+      "ap-northeast-1-0",
+      "ap-northeast-1-1",
+      "ap-northeast-1-2"
+    ]
+  },
+  "server_port": 7087,
+  "truetime_error": 10,
+  "client_num_keys": 1000000,
+  "benchmark_name": "retwis",
+  "bench_mode": "open",
+  "client_key_selector": "zipf",
+  "client_zipf_coefficient": 0.7,
+  "client_arrival_rate": 1,
+  "client_stay_probability": 0.9,
+  "client_switch_probability": 0.5,
+  "client_think_time": 0,
+  "nb_time_alpha": 1.0,
+  "rw_num_ops_txn": 1,
+  "server_preload_keys": true,
+  "client_abort_backoff": 1,
+  "client_retry_aborted": true,
+  "client_max_attempts": -1,
+  "client_max_backoff": 2500,
+  "client_message_timeout": 60000,
+  "run_locally": true,
+  "replication_protocol_settings": {
+    "message_transport_type": "tcp"
+  },
+  "stats_merge_lists": [
+    "txn_groups",
+    "commit_branch"
+  ],
+  "experiment_name": "spanner-rss",
+  "codebase_name": "rss",
+  "pin_client_processes": false,
+  "pin_server_processes": false,
+  "client_debug_output": true,
+  "server_debug_output": true,
+  "client_debug_stats": false,
+  "server_debug_stats": false,
+  "server_load_time": 5,
+  "client_experiment_length": 10,
+  "client_rand_sleep": 0,
+  "client_ramp_down": 0,
+  "client_ramp_up": 0,
+  "default_remote_shell": "bash",
+  "server_host_format_str": "%s.%s.%s.utah.cloudlab.us",
+  "client_host_format_str": "%s.%s.%s.utah.cloudlab.us",
+  "project_name": "cops-pg0",
+  "region_rtt_latencies": {
+    "us-east-1": {
+      "us-east-1": 0,
+      "eu-west-1": 73,
+      "ap-northeast-1": 160,
+      "us-west-1": 63,
+      "eu-central-1": 87,
+      "ap-southeast-2": 199
+    },
+    "eu-west-1": {
+      "us-east-1": 73,
+      "eu-west-1": 0,
+      "ap-northeast-1": 220,
+      "us-west-1": 145,
+      "eu-central-1": 26,
+      "ap-southeast-2": 255
+    },
+    "ap-northeast-1": {
+      "us-east-1": 160,
+      "eu-west-1": 220,
+      "ap-northeast-1": 0,
+      "us-west-1": 115,
+      "eu-central-1": 243,
+      "ap-southeast-2": 106
+    },
+    "us-west-1": {
+      "us-east-1": 63,
+      "eu-west-1": 145,
+      "ap-northeast-1": 115,
+      "us-west-1": 0,
+      "eu-central-1": 148,
+      "ap-southeast-2": 139
+    },
+    "eu-central-1": {
+      "us-east-1": 87,
+      "eu-west-1": 26,
+      "ap-northeast-1": 243,
+      "us-west-1": 148,
+      "eu-central-1": 0,
+      "ap-southeast-2": 177
+    },
+    "ap-southeast-2": {
+      "us-east-1": 199,
+      "eu-west-1": 255,
+      "ap-northeast-1": 106,
+      "us-west-1": 139,
+      "eu-central-1": 177,
+      "ap-southeast-2": 0
+    }
+  },
+  "server_emulate_wan": false,
+  "plots": [],
+  "cdf_plots": {
+    "font": "DejaVu Sans,12",
+    "height": 600,
+    "width": 800,
+    "x_label": "Latency (ms)",
+    "y_label": "Cumulative ratio of operations"
+  },
+  "lot_plots": {
+    "font": "DejaVu Sans,12",
+    "height": 600,
+    "width": 800,
+    "x_label": "Time (ms)",
+    "y_label": "Latency (ms)"
+  },
+  "plot_cdf_png_font": "DejaVu Sans,12",
+  "plot_cdf_png_height": 600,
+  "plot_cdf_png_width": 800,
+  "plot_cdf_series_title": "Protocol",
+  "plot_cdf_x_label": "Latency (ms)",
+  "plot_cdf_y_label": "Cumulative ratio of operations",
+  "plot_directory_name": "plots",
+  "plot_tput_lat_png_font": "DejaVu Sans,12",
+  "plot_tput_lat_png_height": 600,
+  "plot_tput_lat_png_width": 800,
+  "plot_tput_lat_series_title": "Indicus",
+  "plot_tput_lat_x_label": "Throughput (ops/sec)",
+  "plot_tput_lat_y_label": "Latency (ms)",
+  "input_latency_scale": 1000000000,
+  "output_latency_scale": 1000,
+  "src_commit_hash": "composition",
+  "stats_file_name": "stats.json",
+  "base_local_exp_directory": "/home/jhelt/git/rss/tapir/experiments/results",
+  "base_mounted_fs_path": "/mnt/extra",
+  "base_remote_bin_directory_nfs": "/home/jhelt/git/rss/tapir",
+  "base_remote_exp_directory": "/mnt/extra/experiments",
+  "bin_directory_name": "bin",
+  "client_bin_name": "benchmark",
+  "client_name_format_str": "%s",
+  "emulab_user": "root",
+  "max_bandwidth": "10gibps",
+  "max_file_descriptors": 1000000,
+  "max_retries": 1,
+  "num_experiment_runs": 1,
+  "out_directory_name": "out",
+  "server_bin_name": "server",
+  "src_directory": "/home/jhelt/git/rss/tapir/src",
+  "make_collect_bins": [
+    "store/benchmark/async/benchmark",
+    "store/server"
+  ],
+  "make_clean": false,
+  "remote_bin_directory_nfs_enabled": false,
+  "client_combine_ro_ops": [
+    "get_timeline"
+  ],
+  "client_combine_stats_blacklist": [],
+  "client_stats_blacklist": [],
+  "client_cdf_plot_blacklist": [],
+  "make_env": {},
+  "server_rdma_port": 9087,
+  "rxe_cfg_path": "",
+  "client_read_percentage": 0,
+  "client_write_percentage": 1000,
+  "client_conflict_percentage": 2,
+  "client_max_processors": 2,
+  "client_random_coordinator": false,
+  "client_rmw_percentage": 0,
+  "client_zipfian_s": 2,
+  "client_zipfian_v": 1,
+  "use_master": false,
+  "master_bin_name": "master",
+  "master_port": 7077,
+  "master_server_name": "california",
+  "client_disable_gc": true,
+  "server_disable_gc": true,
+  "server_cpuprofile": false,
+  "server_durable": false,
+  "server_rpc_port": 8087,
+  "client_gc_debug_trace": false,
+  "client_cpuprofile": false,
+  "server_gc_debug_trace": false
+}
