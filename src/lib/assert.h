@@ -4,6 +4,7 @@
  * assert.h:
  *   assertion macros that integrate with the logging framework
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013-2015 Irene Zhang <iyzhang@cs.washington.edu>
  *                     Naveen Kr. Sharma <naveenks@cs.washington.edu>
  *                     Dan R. K. Ports  <drkp@cs.washington.edu>
@@ -48,14 +49,16 @@
 #define ASSERT(x) Assert(x)
 
 #define NOT_REACHABLE()                                               \
-    do {                                                              \
+    do                                                                \
+    {                                                                 \
         fprintf(stderr, "NOT_REACHABLE point reached: %s, line %d\n", \
                 __FILE__, __LINE__);                                  \
         abort();                                                      \
     } while (0)
 
 #define NOT_IMPLEMENTED()                                               \
-    do {                                                                \
+    do                                                                  \
+    {                                                                   \
         fprintf(stderr, "NOT_IMPLEMENTED point reached: %s, line %d\n", \
                 __FILE__, __LINE__);                                    \
         abort();                                                        \

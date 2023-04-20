@@ -4,6 +4,7 @@
  * store/common/frontend/txnclient.h
  *   Client interface for a single replicated shard.
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2015 Irene Zhang <iyzhang@cs.washington.edu>
  *                Naveen Kr. Sharma <naveenks@cs.washington.edu>
  *
@@ -59,8 +60,9 @@
 typedef std::function<void(int, Timestamp)> prepare_callback;
 typedef std::function<void(int, Timestamp)> prepare_timeout_callback;
 
-class TxnClient {
-   public:
+class TxnClient
+{
+public:
     TxnClient() : lastReqId(0UL) {}
     virtual ~TxnClient() {}
 
@@ -76,7 +78,8 @@ class TxnClient {
 
     virtual void GetForUpdate(uint64_t id, const std::string &key,
                               const Timestamp &timestamp, get_callback gcb,
-                              get_timeout_callback gtcb, uint32_t timeout) {
+                              get_timeout_callback gtcb, uint32_t timeout)
+    {
         Panic("Not implemented.");
     }
 
@@ -88,7 +91,8 @@ class TxnClient {
     virtual void Put(uint64_t id, const std::string &key,
                      const std::string &value, const Timestamp &ts,
                      put_callback pcb, put_timeout_callback ptcb,
-                     uint32_t timeout) {
+                     uint32_t timeout)
+    {
         Panic("Not implemented.");
     }
 
@@ -106,35 +110,41 @@ class TxnClient {
                          const Timestamp &timestamp, prepare_callback pcb,
                          prepare_timeout_callback ptcb, uint32_t timeout) = 0;
 
-   protected:
-    struct PendingRequest {
+protected:
+    struct PendingRequest
+    {
         PendingRequest(uint64_t reqId) : reqId(reqId) {}
         uint64_t reqId;
     };
-    struct PendingGet : public PendingRequest {
+    struct PendingGet : public PendingRequest
+    {
         PendingGet(uint64_t reqId) : PendingRequest(reqId) {}
         std::string key;
         get_callback gcb;
         get_timeout_callback gtcb;
     };
-    struct PendingPut : public PendingRequest {
+    struct PendingPut : public PendingRequest
+    {
         PendingPut(uint64_t reqId) : PendingRequest(reqId) {}
         std::string key;
         std::string value;
         put_callback pcb;
         put_timeout_callback ptcb;
     };
-    struct PendingPrepare : public PendingRequest {
+    struct PendingPrepare : public PendingRequest
+    {
         PendingPrepare(uint64_t reqId) : PendingRequest(reqId) {}
         prepare_callback pcb;
         prepare_timeout_callback ptcb;
     };
-    struct PendingCommit : public PendingRequest {
+    struct PendingCommit : public PendingRequest
+    {
         PendingCommit(uint64_t reqId) : PendingRequest(reqId) {}
         commit_callback ccb;
         commit_timeout_callback ctcb;
     };
-    struct PendingAbort : public PendingRequest {
+    struct PendingAbort : public PendingRequest
+    {
         PendingAbort(uint64_t reqId) : PendingRequest(reqId) {}
         abort_callback acb;
         abort_timeout_callback atcb;

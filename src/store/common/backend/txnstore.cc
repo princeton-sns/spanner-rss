@@ -5,6 +5,7 @@
  *   Interface for a single node transactional store serving as a
  *   server-side backend
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013-2015 Irene Zhang <iyzhang@cs.washington.edu>
  *                     Naveen Kr. Sharma <naveenks@cs.washington.edu>
  *                     Dan R. K. Ports  <drkp@cs.washington.edu>
@@ -39,52 +40,61 @@ TxnStore::TxnStore() {}
 TxnStore::~TxnStore() {}
 
 int TxnStore::Get(uint64_t id, const string &key,
-                  pair<Timestamp, string> &value) {
+                  pair<Timestamp, string> &value)
+{
     Panic("Unimplemented GET");
     return 0;
 }
 
 int TxnStore::Get(uint64_t id, const string &key, const Timestamp &timestamp,
                   pair<Timestamp, string> &value,
-                  std::unordered_map<uint64_t, int> &statuses) {
+                  std::unordered_map<uint64_t, int> &statuses)
+{
     Panic("Unimplemented GET");
     return 0;
 }
 
-int TxnStore::Put(uint64_t id, const string &key, const string &value) {
+int TxnStore::Put(uint64_t id, const string &key, const string &value)
+{
     Panic("Unimplemented PUT");
     return 0;
 }
 
 int TxnStore::Put(uint64_t id, const string &key, const string &value,
                   const Timestamp &timestamp,
-                  std::unordered_map<uint64_t, int> &statuses) {
+                  std::unordered_map<uint64_t, int> &statuses)
+{
     Panic("Unimplemented PUT");
     return 0;
 }
 
 int TxnStore::Prepare(uint64_t id, const Transaction &txn,
-                      std::unordered_map<uint64_t, int> &statuses) {
+                      std::unordered_map<uint64_t, int> &statuses)
+{
     Panic("Unimplemented PREPARE");
     return 0;
 }
 
 int TxnStore::Prepare(uint64_t id, const Transaction &txn,
-                      const Timestamp &timestamp, Timestamp &proposed) {
+                      const Timestamp &timestamp, Timestamp &proposed)
+{
     Panic("Unimplemented PREPARE");
     return 0;
 }
 
 bool TxnStore::Commit(uint64_t id, const Timestamp &ts,
-                      std::unordered_map<uint64_t, int> &statuses) {
+                      std::unordered_map<uint64_t, int> &statuses)
+{
     Panic("Unimplemented COMMIT");
 }
 
-void TxnStore::Abort(uint64_t id, std::unordered_map<uint64_t, int> &statuses) {
+void TxnStore::Abort(uint64_t id, std::unordered_map<uint64_t, int> &statuses)
+{
     Panic("Unimplemented ABORT");
 }
 
 void TxnStore::Load(const string &key, const string &value,
-                    const Timestamp &timestamp) {
+                    const Timestamp &timestamp)
+{
     Panic("Unimplemented LOAD");
 }

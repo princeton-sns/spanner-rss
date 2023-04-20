@@ -5,6 +5,7 @@
  *   message-passing network interface that uses UDP message delivery
  *   and libasync
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013 Dan R. K. Ports  <drkp@cs.washington.edu>
  *
  * Permission is hereby granted, free of charge, to any person
@@ -39,19 +40,19 @@
 
 #include <event2/event.h>
 
-#include <map>
 #include <list>
-#include <vector>
-#include <unordered_map>
-#include <random>
-#include <netinet/in.h>
 #include <map>
 #include <mutex>
+#include <netinet/in.h>
+#include <random>
+#include <unordered_map>
+#include <vector>
 
 class UDPTransportAddress : public TransportAddress
 {
 public:
-    UDPTransportAddress * clone() const;
+    UDPTransportAddress *clone() const;
+
 private:
     UDPTransportAddress(const sockaddr_in &addr);
     sockaddr_in addr;
@@ -82,7 +83,7 @@ public:
     virtual bool CancelTimer(int id) override;
     virtual void CancelAllTimers() override;
 
-    virtual void DispatchTP(std::function<void*()> f, std::function<void(void*)> cb) override;
+    virtual void DispatchTP(std::function<void *()> f, std::function<void(void *)> cb) override;
 
 private:
     int TimerInternal(struct timeval &tv, timer_callback_t cb);
@@ -111,8 +112,8 @@ private:
     event_base *libeventBase;
     std::vector<event *> listenerEvents;
     std::vector<event *> signalEvents;
-    std::map<int, TransportReceiver*> receivers; // fd -> receiver
-    std::map<TransportReceiver*, int> fds; // receiver -> fd
+    std::map<int, TransportReceiver *> receivers; // fd -> receiver
+    std::map<TransportReceiver *, int> fds;       // receiver -> fd
     std::map<const transport::Configuration *, int> multicastFds;
     std::map<int, const transport::Configuration *> multicastConfigs;
     std::set<int> rawFds;
@@ -146,12 +147,12 @@ private:
     const UDPTransportAddress *
     LookupMulticastAddress(const transport::Configuration *cfg) override;
     void ListenOnMulticastPort(const transport::Configuration
-                               *canonicalConfig,
+                                   *canonicalConfig,
                                int groupIdx,
                                int replicaIdx);
     void OnReadable(int fd);
     void ProcessPacket(int fd, sockaddr_in sender, socklen_t senderSize,
-                     char *buf, ssize_t sz);
+                       char *buf, ssize_t sz);
     void OnTimer(UDPTransportTimerInfo *info);
     static void SocketCallback(evutil_socket_t fd,
                                short what, void *arg);
@@ -163,4 +164,4 @@ private:
                                short what, void *arg);
 };
 
-#endif  // _LIB_UDPTRANSPORT_H_
+#endif // _LIB_UDPTRANSPORT_H_

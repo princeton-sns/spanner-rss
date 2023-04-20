@@ -1,8 +1,29 @@
 // -*- mode: c++; c-file-style: "k&r"; c-basic-offset: 4 -*-
 /***********************************************************************
  *
- * store/benchmark/tpccClient.cc:
- *   Benchmarking client for tpcc.
+ * store/benchmark/async/benchmark.cc:
+ *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy,
+ * modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  **********************************************************************/
 
@@ -30,21 +51,27 @@
 #include "store/strongstore/client.h"
 #include "store/strongstore/networkconfig.h"
 
-enum protomode_t {
+enum protomode_t
+{
     PROTO_UNKNOWN,
     PROTO_STRONG,
 };
 
-enum benchmode_t {
+enum benchmode_t
+{
     BENCH_UNKNOWN,
     BENCH_RETWIS,
 };
 
-enum keysmode_t { KEYS_UNKNOWN,
-                  KEYS_UNIFORM,
-                  KEYS_ZIPF };
+enum keysmode_t
+{
+    KEYS_UNKNOWN,
+    KEYS_UNIFORM,
+    KEYS_ZIPF
+};
 
-enum transmode_t {
+enum transmode_t
+{
     TRANS_UNKNOWN,
     TRANS_UDP,
     TRANS_TCP,
@@ -65,10 +92,13 @@ DEFINE_bool(debug_stats, false, "record stats related to debugging");
 const std::string trans_args[] = {"udp", "tcp"};
 
 const transmode_t transmodes[]{TRANS_UDP, TRANS_TCP};
-static bool ValidateTransMode(const char *flagname, const std::string &value) {
+static bool ValidateTransMode(const char *flagname, const std::string &value)
+{
     int n = sizeof(trans_args);
-    for (int i = 0; i < n; ++i) {
-        if (value == trans_args[i]) {
+    for (int i = 0; i < n; ++i)
+    {
+        if (value == trans_args[i])
+        {
             return true;
         }
     }
@@ -85,10 +115,13 @@ const std::string protocol_args[] = {"span-lock"};
 const protomode_t protomodes[]{PROTO_STRONG};
 const strongstore::Mode strongmodes[]{strongstore::Mode::MODE_SPAN_LOCK};
 static bool ValidateProtocolMode(const char *flagname,
-                                 const std::string &value) {
+                                 const std::string &value)
+{
     int n = sizeof(protocol_args);
-    for (int i = 0; i < n; ++i) {
-        if (value == protocol_args[i]) {
+    for (int i = 0; i < n; ++i)
+    {
+        if (value == protocol_args[i])
+        {
             return true;
         }
     }
@@ -107,10 +140,13 @@ const strongstore::Consistency strong_consistency[]{
     strongstore::Consistency::RSS,
 };
 static bool ValidateStrongConsistency(const char *flagname,
-                                      const std::string &value) {
+                                      const std::string &value)
+{
     int n = sizeof(strong_consistency_args);
-    for (int i = 0; i < n; ++i) {
-        if (value == strong_consistency_args[i]) {
+    for (int i = 0; i < n; ++i)
+    {
+        if (value == strong_consistency_args[i])
+        {
             return true;
         }
     }
@@ -127,10 +163,13 @@ DEFINE_double(nb_time_alpha, 1.0, "multiple for non-block time estimates.");
 
 const std::string benchmark_args[] = {"retwis"};
 const benchmode_t benchmodes[]{BENCH_RETWIS};
-static bool ValidateBenchmark(const char *flagname, const std::string &value) {
+static bool ValidateBenchmark(const char *flagname, const std::string &value)
+{
     int n = sizeof(benchmark_args);
-    for (int i = 0; i < n; ++i) {
-        if (value == benchmark_args[i]) {
+    for (int i = 0; i < n; ++i)
+    {
+        if (value == benchmark_args[i])
+        {
             return true;
         }
     }
@@ -179,10 +218,13 @@ const std::string partitioner_args[] = {"default", "warehouse_dist_items",
                                         "warehouse"};
 const partitioner_t parts[]{DEFAULT, WAREHOUSE_DIST_ITEMS, WAREHOUSE};
 static bool ValidatePartitioner(const char *flagname,
-                                const std::string &value) {
+                                const std::string &value)
+{
     int n = sizeof(partitioner_args);
-    for (int i = 0; i < n; ++i) {
-        if (value == partitioner_args[i]) {
+    for (int i = 0; i < n; ++i)
+    {
+        if (value == partitioner_args[i])
+        {
             return true;
         }
     }
@@ -205,10 +247,13 @@ DEFINE_uint64(num_keys, 0, "number of keys to generate (for retwis");
 
 const std::string keys_args[] = {"uniform", "zipf"};
 const keysmode_t keysmodes[]{KEYS_UNIFORM, KEYS_ZIPF};
-static bool ValidateKeys(const char *flagname, const std::string &value) {
+static bool ValidateKeys(const char *flagname, const std::string &value)
+{
     int n = sizeof(keys_args);
-    for (int i = 0; i < n; ++i) {
-        if (value == keys_args[i]) {
+    for (int i = 0; i < n; ++i)
+    {
+        if (value == keys_args[i])
+        {
             return true;
         }
     }
@@ -224,10 +269,13 @@ DEFINE_validator(key_selector, &ValidateKeys);
 const std::string bench_args[] = {"open", "closed"};
 
 const BenchmarkClientMode bench_modes[]{OPEN, CLOSED};
-static bool ValidateBenchMode(const char *flagname, const std::string &value) {
+static bool ValidateBenchMode(const char *flagname, const std::string &value)
+{
     int n = sizeof(bench_args);
-    for (int i = 0; i < n; ++i) {
-        if (value == bench_args[i]) {
+    for (int i = 0; i < n; ++i)
+    {
+        if (value == bench_args[i])
+        {
             return true;
         }
     }
@@ -330,7 +378,8 @@ void Signal(int signal);
 void Cleanup();
 void FlushStats();
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     gflags::SetUsageMessage(
         "executes transactions from various transactional workload\n"
         "           benchmarks against various distributed replicated "
@@ -345,13 +394,16 @@ int main(int argc, char **argv) {
     // parse transport protocol
     transmode_t trans = TRANS_UNKNOWN;
     int numTransModes = sizeof(trans_args);
-    for (int i = 0; i < numTransModes; ++i) {
-        if (FLAGS_trans_protocol == trans_args[i]) {
+    for (int i = 0; i < numTransModes; ++i)
+    {
+        if (FLAGS_trans_protocol == trans_args[i])
+        {
             trans = transmodes[i];
             break;
         }
     }
-    if (trans == TRANS_UNKNOWN) {
+    if (trans == TRANS_UNKNOWN)
+    {
         std::cerr << "Unknown transport protocol." << std::endl;
         return 1;
     }
@@ -360,8 +412,10 @@ int main(int argc, char **argv) {
     protomode_t mode = PROTO_UNKNOWN;
     strongstore::Mode strongmode = strongstore::Mode::MODE_UNKNOWN;
     int numProtoModes = sizeof(protocol_args);
-    for (int i = 0; i < numProtoModes; ++i) {
-        if (FLAGS_protocol_mode == protocol_args[i]) {
+    for (int i = 0; i < numProtoModes; ++i)
+    {
+        if (FLAGS_protocol_mode == protocol_args[i])
+        {
             mode = protomodes[i];
             strongmode = strongmodes[i];
             break;
@@ -369,7 +423,8 @@ int main(int argc, char **argv) {
     }
     if (mode == PROTO_UNKNOWN ||
         (mode == PROTO_STRONG &&
-         strongmode == strongstore::Mode::MODE_UNKNOWN)) {
+         strongmode == strongstore::Mode::MODE_UNKNOWN))
+    {
         std::cerr << "Unknown protocol or unknown strongmode." << std::endl;
         return 1;
     }
@@ -377,8 +432,10 @@ int main(int argc, char **argv) {
     // parse consistency
     strongstore::Consistency consistency = strongstore::Consistency::SS;
     int n_consistencies = sizeof(strong_consistency);
-    for (int i = 0; i < n_consistencies; ++i) {
-        if (FLAGS_strong_consistency == strong_consistency_args[i]) {
+    for (int i = 0; i < n_consistencies; ++i)
+    {
+        if (FLAGS_strong_consistency == strong_consistency_args[i])
+        {
             consistency = strong_consistency[i];
             break;
         }
@@ -387,13 +444,16 @@ int main(int argc, char **argv) {
     // parse benchmark mode
     BenchmarkClientMode bench_mode = UNKNOWN;
     int numBenchModes = sizeof(bench_args);
-    for (int i = 0; i < numBenchModes; ++i) {
-        if (FLAGS_bench_mode == bench_args[i]) {
+    for (int i = 0; i < numBenchModes; ++i)
+    {
+        if (FLAGS_bench_mode == bench_args[i])
+        {
             bench_mode = bench_modes[i];
             break;
         }
     }
-    if (bench_mode == UNKNOWN) {
+    if (bench_mode == UNKNOWN)
+    {
         std::cerr << "Unknown bench mode." << std::endl;
         return 1;
     }
@@ -401,13 +461,16 @@ int main(int argc, char **argv) {
     // parse benchmark
     benchmode_t benchMode = BENCH_UNKNOWN;
     int numBenchs = sizeof(benchmark_args);
-    for (int i = 0; i < numBenchs; ++i) {
-        if (FLAGS_benchmark == benchmark_args[i]) {
+    for (int i = 0; i < numBenchs; ++i)
+    {
+        if (FLAGS_benchmark == benchmark_args[i])
+        {
             benchMode = benchmodes[i];
             break;
         }
     }
-    if (benchMode == BENCH_UNKNOWN) {
+    if (benchMode == BENCH_UNKNOWN)
+    {
         std::cerr << "Unknown benchmark." << std::endl;
         return 1;
     }
@@ -415,8 +478,10 @@ int main(int argc, char **argv) {
     // parse partitioner
     partitioner_t partType = DEFAULT;
     int numParts = sizeof(partitioner_args);
-    for (int i = 0; i < numParts; ++i) {
-        if (FLAGS_partitioner == partitioner_args[i]) {
+    for (int i = 0; i < numParts; ++i)
+    {
+        if (FLAGS_partitioner == partitioner_args[i])
+        {
             partType = parts[i];
             break;
         }
@@ -425,13 +490,16 @@ int main(int argc, char **argv) {
     // parse key selector
     keysmode_t keySelectionMode = KEYS_UNKNOWN;
     int numKeySelectionModes = sizeof(keys_args);
-    for (int i = 0; i < numKeySelectionModes; ++i) {
-        if (FLAGS_key_selector == keys_args[i]) {
+    for (int i = 0; i < numKeySelectionModes; ++i)
+    {
+        if (FLAGS_key_selector == keys_args[i])
+        {
             keySelectionMode = keysmodes[i];
             break;
         }
     }
-    if (keySelectionMode == KEYS_UNKNOWN) {
+    if (keySelectionMode == KEYS_UNKNOWN)
+    {
         std::cerr << "Unknown key selector." << std::endl;
         return 1;
     }
@@ -441,86 +509,104 @@ int main(int argc, char **argv) {
     std::stringstream iss(FLAGS_closest_replicas);
     int replica;
     iss >> replica;
-    while (!iss.fail()) {
+    while (!iss.fail())
+    {
         closestReplicas.push_back(replica);
         iss >> replica;
     }
 
     // parse retwis settings
     std::vector<std::string> keys;
-    if (benchMode == BENCH_RETWIS) {
-        if (FLAGS_keys_path.empty()) {
-            if (FLAGS_num_keys > 0) {
+    if (benchMode == BENCH_RETWIS)
+    {
+        if (FLAGS_keys_path.empty())
+        {
+            if (FLAGS_num_keys > 0)
+            {
                 std::string key = "0000000000";
                 keys.reserve(FLAGS_num_keys);
-                for (size_t i = 0; i < FLAGS_num_keys; ++i) {
+                for (size_t i = 0; i < FLAGS_num_keys; ++i)
+                {
                     keys.emplace_back(key);
-                    for (int j = key.size() - 1; j >= 0; --j) {
-                        if (key[j] < '9') {
+                    for (int j = key.size() - 1; j >= 0; --j)
+                    {
+                        if (key[j] < '9')
+                        {
                             key[j] += static_cast<char>(1);
                             break;
-                        } else {
+                        }
+                        else
+                        {
                             key[j] = '0';
                         }
                     }
                 }
-            } else {
+            }
+            else
+            {
                 std::cerr << "Specified neither keys file nor number of keys."
                           << std::endl;
                 return 1;
             }
-        } else {
+        }
+        else
+        {
             std::ifstream in;
             in.open(FLAGS_keys_path);
-            if (!in) {
+            if (!in)
+            {
                 std::cerr << "Could not read keys from: " << FLAGS_keys_path
                           << std::endl;
                 return 1;
             }
             std::string key;
-            while (std::getline(in, key)) {
+            while (std::getline(in, key))
+            {
                 keys.push_back(key);
             }
             in.close();
         }
     }
 
-    switch (trans) {
-        case TRANS_TCP:
-            tport = new TCPTransport(0.0, 0.0, 0, false);
-            break;
-        case TRANS_UDP:
-            tport = new UDPTransport(0.0, 0.0, 0, false);
-            break;
-        default:
-            NOT_REACHABLE();
+    switch (trans)
+    {
+    case TRANS_TCP:
+        tport = new TCPTransport(0.0, 0.0, 0, false);
+        break;
+    case TRANS_UDP:
+        tport = new UDPTransport(0.0, 0.0, 0, false);
+        break;
+    default:
+        NOT_REACHABLE();
     }
 
-    switch (keySelectionMode) {
-        case KEYS_UNIFORM:
-            keySelector = new UniformKeySelector(keys);
-            break;
-        case KEYS_ZIPF:
-            keySelector = new ZipfKeySelector(keys, FLAGS_zipf_coefficient);
-            break;
-        default:
-            NOT_REACHABLE();
+    switch (keySelectionMode)
+    {
+    case KEYS_UNIFORM:
+        keySelector = new UniformKeySelector(keys);
+        break;
+    case KEYS_ZIPF:
+        keySelector = new ZipfKeySelector(keys, FLAGS_zipf_coefficient);
+        break;
+    default:
+        NOT_REACHABLE();
     }
 
-    std::mt19937 rand(FLAGS_client_id);  // TODO: is this safe?
+    std::mt19937 rand(FLAGS_client_id); // TODO: is this safe?
 
-    switch (partType) {
-        case DEFAULT:
-            part = new DefaultPartitioner();
-            break;
-        case WAREHOUSE_DIST_ITEMS:
-            part = new WarehouseDistItemsPartitioner(FLAGS_tpcc_num_warehouses);
-            break;
-        case WAREHOUSE:
-            part = new WarehousePartitioner(FLAGS_tpcc_num_warehouses, rand);
-            break;
-        default:
-            NOT_REACHABLE();
+    switch (partType)
+    {
+    case DEFAULT:
+        part = new DefaultPartitioner();
+        break;
+    case WAREHOUSE_DIST_ITEMS:
+        part = new WarehouseDistItemsPartitioner(FLAGS_tpcc_num_warehouses);
+        break;
+    case WAREHOUSE:
+        part = new WarehousePartitioner(FLAGS_tpcc_num_warehouses, rand);
+        break;
+    default:
+        NOT_REACHABLE();
     }
 
     std::string latencyFile;
@@ -528,28 +614,34 @@ int main(int argc, char **argv) {
     std::vector<uint64_t> latencies;
     std::atomic<size_t> clientsDone(0UL);
 
-    bench_done_callback bdcb = [&clientsDone, &latencyFile, &latencyRawFile]() {
+    bench_done_callback bdcb = [&clientsDone, &latencyFile, &latencyRawFile]()
+    {
         ++clientsDone;
         Debug("%lu clients have finished.", clientsDone.load());
-        if (clientsDone == 1) {
+        if (clientsDone == 1)
+        {
             Latency_t sum;
             _Latency_Init(&sum, "total");
-            for (unsigned int i = 0; i < benchClients.size(); i++) {
+            for (unsigned int i = 0; i < benchClients.size(); i++)
+            {
                 Latency_Sum(&sum, &benchClients[i]->latency);
             }
 
             Latency_Dump(&sum);
-            if (latencyFile.size() > 0) {
+            if (latencyFile.size() > 0)
+            {
                 Latency_FlushTo(latencyFile.c_str());
             }
 
             latencyRawFile = latencyFile + ".raw";
             std::ofstream rawFile(latencyRawFile.c_str(),
                                   std::ios::out | std::ios::binary);
-            for (auto x : benchClients) {
+            for (auto x : benchClients)
+            {
                 rawFile.write((char *)&x->latencies[0],
                               (x->latencies.size() * sizeof(x->latencies[0])));
-                if (!rawFile) {
+                if (!rawFile)
+                {
                     Warning("Failed to write raw latency output");
                 }
             }
@@ -558,7 +650,8 @@ int main(int argc, char **argv) {
     };
 
     std::ifstream net_config_stream(FLAGS_net_config_path);
-    if (net_config_stream.fail()) {
+    if (net_config_stream.fail())
+    {
         std::cerr << "Unable to read configuration file: " << FLAGS_net_config_path << std::endl;
         return -1;
     }
@@ -570,15 +663,18 @@ int main(int argc, char **argv) {
     std::vector<strongstore::NetworkConfiguration> net_configs;
     std::vector<std::string> client_regions;
     int i = 0;
-    while (std::getline(f, buf, ',')) {
+    while (std::getline(f, buf, ','))
+    {
         std::ifstream replica_config_stream{buf};
-        if (replica_config_stream.fail()) {
+        if (replica_config_stream.fail())
+        {
             std::cerr << "Unable to read configuration file: " << buf << std::endl;
             return -1;
         }
         replica_configs.emplace_back(replica_config_stream);
 
-        if (mode == PROTO_STRONG) {
+        if (mode == PROTO_STRONG)
+        {
             net_config_stream.seekg(0);
             net_configs.emplace_back(replica_configs[i], net_config_stream);
             client_regions.emplace_back(net_configs[i].GetRegion(FLAGS_client_host));
@@ -597,66 +693,74 @@ int main(int argc, char **argv) {
     // }
 
     const std::size_t n_instances = replica_configs.size();
-    for (std::size_t i = 0; i < n_instances; ++i) {
+    for (std::size_t i = 0; i < n_instances; ++i)
+    {
         Client *client = nullptr;
-        switch (mode) {
-            case PROTO_STRONG: {
-                auto &shard_config = replica_configs[i];
-                auto &net_config = net_configs[i];
-                auto &client_region = client_regions[i];
+        switch (mode)
+        {
+        case PROTO_STRONG:
+        {
+            auto &shard_config = replica_configs[i];
+            auto &net_config = net_configs[i];
+            auto &client_region = client_regions[i];
 
-                client = new strongstore::Client(
-                    consistency, net_config, client_region, shard_config,
-                    FLAGS_client_id, FLAGS_num_shards, FLAGS_closest_replica,
-                    tport, part, tt, FLAGS_debug_stats, FLAGS_nb_time_alpha);
-                break;
-            }
-            default:
-                NOT_REACHABLE();
+            client = new strongstore::Client(
+                consistency, net_config, client_region, shard_config,
+                FLAGS_client_id, FLAGS_num_shards, FLAGS_closest_replica,
+                tport, part, tt, FLAGS_debug_stats, FLAGS_nb_time_alpha);
+            break;
+        }
+        default:
+            NOT_REACHABLE();
         }
 
         ASSERT(client != nullptr);
         clients.push_back(client);
     }
 
-    switch (benchMode) {
-        case BENCH_RETWIS:
-            break;
-        default:
-            NOT_REACHABLE();
+    switch (benchMode)
+    {
+    case BENCH_RETWIS:
+        break;
+    default:
+        NOT_REACHABLE();
     }
 
     uint32_t seed = FLAGS_client_id << 4;
     BenchmarkClient *bench;
-    switch (benchMode) {
-        case BENCH_RETWIS:
-            bench = new retwis::RetwisClient(
-                keySelector, clients, FLAGS_message_timeout, *tport, seed,
-                bench_mode,
-                FLAGS_client_switch_probability,
-                FLAGS_client_arrival_rate, FLAGS_client_think_time, FLAGS_client_stay_probability,
-                FLAGS_mpl,
-                FLAGS_exp_duration, FLAGS_warmup_secs, FLAGS_cooldown_secs,
-                FLAGS_tput_interval,
-                FLAGS_abort_backoff, FLAGS_retry_aborted, FLAGS_max_backoff,
-                FLAGS_max_attempts);
-            break;
-        default:
-            NOT_REACHABLE();
+    switch (benchMode)
+    {
+    case BENCH_RETWIS:
+        bench = new retwis::RetwisClient(
+            keySelector, clients, FLAGS_message_timeout, *tport, seed,
+            bench_mode,
+            FLAGS_client_switch_probability,
+            FLAGS_client_arrival_rate, FLAGS_client_think_time, FLAGS_client_stay_probability,
+            FLAGS_mpl,
+            FLAGS_exp_duration, FLAGS_warmup_secs, FLAGS_cooldown_secs,
+            FLAGS_tput_interval,
+            FLAGS_abort_backoff, FLAGS_retry_aborted, FLAGS_max_backoff,
+            FLAGS_max_attempts);
+        break;
+    default:
+        NOT_REACHABLE();
     }
 
-    switch (benchMode) {
-        case BENCH_RETWIS:
-            tport->Timer(0, [bench, bdcb]() { bench->Start(bdcb); });
-            break;
-        case BENCH_UNKNOWN:
-        default:
-            NOT_REACHABLE();
+    switch (benchMode)
+    {
+    case BENCH_RETWIS:
+        tport->Timer(0, [bench, bdcb]()
+                     { bench->Start(bdcb); });
+        break;
+    case BENCH_UNKNOWN:
+    default:
+        NOT_REACHABLE();
     }
 
     benchClients.push_back(bench);
 
-    if (threads.size() > 0) {
+    if (threads.size() > 0)
+    {
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
@@ -677,14 +781,17 @@ int main(int argc, char **argv) {
     FlushStats();
 
     delete keySelector;
-    for (auto i : threads) {
+    for (auto i : threads)
+    {
         i->join();
         delete i;
     }
-    for (auto i : clients) {
+    for (auto i : clients)
+    {
         delete i;
     }
-    for (auto i : benchClients) {
+    for (auto i : benchClients)
+    {
         delete i;
     }
     delete tport;
@@ -693,24 +800,30 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void Signal(int signal) {
+void Signal(int signal)
+{
     Notice("Gracefully stopping bench clients after signal %d.", signal);
     tport->Stop();
     Cleanup();
 }
 
-void Cleanup() {
+void Cleanup()
+{
     // tport->Stop();
 }
 
-void FlushStats() {
-    if (FLAGS_stats_file.size() > 0) {
+void FlushStats()
+{
+    if (FLAGS_stats_file.size() > 0)
+    {
         Notice("Flushing stats to %s.", FLAGS_stats_file.c_str());
         Stats total;
-        for (unsigned int i = 0; i < benchClients.size(); i++) {
+        for (unsigned int i = 0; i < benchClients.size(); i++)
+        {
             total.Merge(benchClients[i]->GetStats());
         }
-        for (unsigned int i = 0; i < clients.size(); i++) {
+        for (unsigned int i = 0; i < clients.size(); i++)
+        {
             total.Merge(clients[i]->GetStats());
         }
 

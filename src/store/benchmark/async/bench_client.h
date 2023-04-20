@@ -1,3 +1,30 @@
+/***********************************************************************
+ *
+ * store/benchmark/async/bench_client.h:
+ *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy,
+ * modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ **********************************************************************/
 #ifndef OPEN_BENCHMARK_CLIENT_H
 #define OPEN_BENCHMARK_CLIENT_H
 
@@ -19,14 +46,16 @@ typedef std::function<void(transaction_status_t)> execute_callback;
 
 typedef std::function<void()> bench_done_callback;
 
-enum BenchmarkClientMode {
+enum BenchmarkClientMode
+{
     UNKNOWN,
     OPEN,
     CLOSED
 };
 
-class BenchmarkClient {
-   public:
+class BenchmarkClient
+{
+public:
     BenchmarkClient(const std::vector<Client *> &clients, uint32_t timeout,
                     Transport &transport, uint64_t id,
                     BenchmarkClientMode mode,
@@ -52,24 +81,28 @@ class BenchmarkClient {
 
     inline const Stats &GetStats() const { return stats; }
 
-   protected:
+protected:
     virtual AsyncTransaction *GetNextTransaction() = 0;
 
     inline std::mt19937 &GetRand() { return rand_; }
 
-    enum BenchState { WARM_UP = 0,
-                      MEASURE = 1,
-                      COOL_DOWN = 2,
-                      DONE = 3 };
+    enum BenchState
+    {
+        WARM_UP = 0,
+        MEASURE = 1,
+        COOL_DOWN = 2,
+        DONE = 3
+    };
     BenchState GetBenchState(struct timeval &diff) const;
     BenchState GetBenchState() const;
 
     Stats stats;
     Transport &transport_;
 
-   private:
-    class SessionState {
-       public:
+private:
+    class SessionState
+    {
+    public:
         SessionState(Session &session, AsyncTransaction *transaction, execute_callback ecb, std::size_t client_index)
             : lat_{}, session_{session}, transaction_{transaction}, ecb_{ecb}, n_attempts_{1}, op_index_{1}, current_client_index_{client_index}, current_client_txn_count_{0} {}
 
@@ -86,7 +119,8 @@ class BenchmarkClient {
 
         std::size_t current_client_index() const { return current_client_index_; }
 
-        void start_transaction(Session &session, AsyncTransaction *transaction, execute_callback ecb, std::size_t client_index) {
+        void start_transaction(Session &session, AsyncTransaction *transaction, execute_callback ecb, std::size_t client_index)
+        {
             session_ = session;
             transaction_ = transaction;
             ecb_ = ecb;
@@ -95,12 +129,13 @@ class BenchmarkClient {
             op_index_ = 1;
         }
 
-        void retry_transaction() {
+        void retry_transaction()
+        {
             n_attempts_++;
             op_index_ = 1;
         }
 
-       private:
+    private:
         Latency_Frame_t lat_;
         std::reference_wrapper<Session> session_;
         AsyncTransaction *transaction_;

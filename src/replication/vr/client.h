@@ -5,6 +5,7 @@
  *   dummy implementation of replication interface that just uses a
  *   single replica and passes commands directly to it
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013 Dan R. K. Ports  <drkp@cs.washington.edu>
  *
  * Permission is hereby granted, free of charge, to any person
@@ -38,70 +39,75 @@
 #include "replication/common/client.h"
 #include "replication/vr/vr-proto.pb.h"
 
-namespace replication {
-namespace vr {
+namespace replication
+{
+    namespace vr
+    {
 
-class VRClient : public Client {
-   public:
-    VRClient(const transport::Configuration &config, Transport *transport,
-             int group, uint64_t clientid);
-    virtual ~VRClient();
-    virtual void Invoke(const string &request, continuation_t continuation,
-                        error_continuation_t error_continuation = nullptr);
-    virtual void InvokeUnlogged(
-        int replicaIdx, const string &request, continuation_t continuation,
-        error_continuation_t error_continuation = nullptr,
-        uint32_t timeout = DEFAULT_UNLOGGED_OP_TIMEOUT);
-    virtual void InvokeUnloggedAll(
-        const string &request, continuation_t continuation,
-        error_continuation_t error_continuation = nullptr,
-        uint32_t timeout = DEFAULT_UNLOGGED_OP_TIMEOUT) override;
+        class VRClient : public Client
+        {
+        public:
+            VRClient(const transport::Configuration &config, Transport *transport,
+                     int group, uint64_t clientid);
+            virtual ~VRClient();
+            virtual void Invoke(const string &request, continuation_t continuation,
+                                error_continuation_t error_continuation = nullptr);
+            virtual void InvokeUnlogged(
+                int replicaIdx, const string &request, continuation_t continuation,
+                error_continuation_t error_continuation = nullptr,
+                uint32_t timeout = DEFAULT_UNLOGGED_OP_TIMEOUT);
+            virtual void InvokeUnloggedAll(
+                const string &request, continuation_t continuation,
+                error_continuation_t error_continuation = nullptr,
+                uint32_t timeout = DEFAULT_UNLOGGED_OP_TIMEOUT) override;
 
-    virtual void ReceiveMessage(const TransportAddress &remote,
-                                const string &type, const string &data,
-                                void *meta_data);
+            virtual void ReceiveMessage(const TransportAddress &remote,
+                                        const string &type, const string &data,
+                                        void *meta_data);
 
-   protected:
-    int view;
-    int opnumber;
-    uint64_t lastReqId;
+        protected:
+            int view;
+            int opnumber;
+            uint64_t lastReqId;
 
-    struct PendingRequest {
-        string request;
-        uint64_t clientReqId;
-        continuation_t continuation;
-        Timeout *timer;
-        inline PendingRequest(string request, uint64_t clientReqId,
-                              continuation_t continuation, Timeout *timer)
-            : request(request),
-              clientReqId(clientReqId),
-              continuation(continuation),
-              timer(timer){};
-        inline ~PendingRequest() { delete timer; }
-    };
+            struct PendingRequest
+            {
+                string request;
+                uint64_t clientReqId;
+                continuation_t continuation;
+                Timeout *timer;
+                inline PendingRequest(string request, uint64_t clientReqId,
+                                      continuation_t continuation, Timeout *timer)
+                    : request(request),
+                      clientReqId(clientReqId),
+                      continuation(continuation),
+                      timer(timer){};
+                inline ~PendingRequest() { delete timer; }
+            };
 
-    struct PendingUnloggedRequest : public PendingRequest {
-        error_continuation_t error_continuation;
-        inline PendingUnloggedRequest(string request, uint64_t clientReqId,
-                                      continuation_t continuation,
-                                      Timeout *timer,
-                                      error_continuation_t error_continuation)
-            : PendingRequest(request, clientReqId, continuation, timer),
-              error_continuation(error_continuation){};
-    };
+            struct PendingUnloggedRequest : public PendingRequest
+            {
+                error_continuation_t error_continuation;
+                inline PendingUnloggedRequest(string request, uint64_t clientReqId,
+                                              continuation_t continuation,
+                                              Timeout *timer,
+                                              error_continuation_t error_continuation)
+                    : PendingRequest(request, clientReqId, continuation, timer),
+                      error_continuation(error_continuation){};
+            };
 
-    std::unordered_map<uint64_t, PendingRequest *> pendingReqs;
+            std::unordered_map<uint64_t, PendingRequest *> pendingReqs;
 
-    void SendRequest(const PendingRequest *req);
-    void ResendRequest(const uint64_t reqId);
-    void HandleReply(const TransportAddress &remote,
-                     const proto::ReplyMessage &msg);
-    void HandleUnloggedReply(const TransportAddress &remote,
-                             const proto::UnloggedReplyMessage &msg);
-    void UnloggedRequestTimeoutCallback(const uint64_t reqId);
-};
+            void SendRequest(const PendingRequest *req);
+            void ResendRequest(const uint64_t reqId);
+            void HandleReply(const TransportAddress &remote,
+                             const proto::ReplyMessage &msg);
+            void HandleUnloggedReply(const TransportAddress &remote,
+                                     const proto::UnloggedReplyMessage &msg);
+            void UnloggedRequestTimeoutCallback(const uint64_t reqId);
+        };
 
-}  // namespace vr
-}  // namespace replication
+    } // namespace vr
+} // namespace replication
 
 #endif /* _VR_CLIENT_H_ */

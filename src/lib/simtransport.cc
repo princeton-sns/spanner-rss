@@ -4,6 +4,7 @@
  * simtransport.cc:
  *   simulated message-passing interface for testing use
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013-2015 Irene Zhang <iyzhang@cs.washington.edu>
  *                     Naveen Kr. Sharma <naveenks@cs.washington.edu>
  *                     Dan R. K. Ports  <drkp@cs.washington.edu>
@@ -30,19 +31,17 @@
  *
  **********************************************************************/
 
+#include "lib/simtransport.h"
 #include "lib/assert.h"
 #include "lib/message.h"
-#include "lib/simtransport.h"
 #include <google/protobuf/message.h>
 
 SimulatedTransportAddress::SimulatedTransportAddress(int addr)
     : addr(addr)
 {
-
 }
 
-int
-SimulatedTransportAddress::GetAddr() const
+int SimulatedTransportAddress::GetAddr() const
 {
     return addr;
 }
@@ -54,8 +53,7 @@ SimulatedTransportAddress::clone() const
     return c;
 }
 
-bool
-SimulatedTransportAddress::operator==(const SimulatedTransportAddress &other) const
+bool SimulatedTransportAddress::operator==(const SimulatedTransportAddress &other) const
 {
     return addr == other.addr;
 }
@@ -70,13 +68,11 @@ SimulatedTransport::SimulatedTransport()
 
 SimulatedTransport::~SimulatedTransport()
 {
-
 }
 
-void
-SimulatedTransport::Register(TransportReceiver *receiver,
-                             const transport::Configuration &config,
-                             int replicaIdx)
+void SimulatedTransport::Register(TransportReceiver *receiver,
+                                  const transport::Configuration &config,
+                                  int replicaIdx)
 {
     // Allocate an endpoint
     ++lastAddr;
@@ -92,11 +88,10 @@ SimulatedTransport::Register(TransportReceiver *receiver,
     replicaIdxs[addr] = replicaIdx;
 }
 
-void
-SimulatedTransport::Register(TransportReceiver *receiver,
-                             const transport::Configuration &config,
-                             int groupIdx,
-                             int replicaIdx)
+void SimulatedTransport::Register(TransportReceiver *receiver,
+                                  const transport::Configuration &config,
+                                  int groupIdx,
+                                  int replicaIdx)
 {
     // Allocate an endpoint
     ++lastAddr;
@@ -108,19 +103,21 @@ SimulatedTransport::Register(TransportReceiver *receiver,
     RegisterConfiguration(receiver, config, groupIdx, replicaIdx);
 
     // If this is registered as a replica, record the index
-    if (g_replicaIdxs.find(groupIdx) == g_replicaIdxs.end()) {
-        std::map<int, int> new_map({ {addr, replicaIdx} });
+    if (g_replicaIdxs.find(groupIdx) == g_replicaIdxs.end())
+    {
+        std::map<int, int> new_map({{addr, replicaIdx}});
         g_replicaIdxs[groupIdx] = new_map;
-    } else {
+    }
+    else
+    {
         g_replicaIdxs[groupIdx][addr] = replicaIdx;
     }
 }
 
-bool
-SimulatedTransport::SendMessageInternal(TransportReceiver *src,
-                                        const SimulatedTransportAddress &dstAddr,
-                                        const Message &m,
-                                        bool multicast)
+bool SimulatedTransport::SendMessageInternal(TransportReceiver *src,
+                                             const SimulatedTransportAddress &dstAddr,
+                                             const Message &m,
+                                             bool multicast)
 {
     ASSERT(!multicast);
 
@@ -133,10 +130,12 @@ SimulatedTransport::SendMessageInternal(TransportReceiver *src,
         dynamic_cast<const SimulatedTransportAddress *>(src->GetAddress())->addr;
 
     uint64_t delay = 0;
-    for (auto f : filters) {
+    for (auto f : filters)
+    {
         if (!f.second(src, replicaIdxs[srcAddr],
                       endpoints[dst], replicaIdxs[dst],
-                      *msg, delay)) {
+                      *msg, delay))
+        {
             // Message dropped by filter
             // XXX Should we return failure?
             delete msg;
@@ -150,12 +149,14 @@ SimulatedTransport::SendMessageInternal(TransportReceiver *src,
 
     QueuedMessage q(dst, srcAddr, m.GetTypeName(), msgData);
 
-    if (delay == 0) {
+    if (delay == 0)
+    {
         queue.push_back(q);
-    } else {
-        Timer(delay, [=]() {
-                queue.push_back(q);
-            });
+    }
+    else
+    {
+        Timer(delay, [=]()
+              { queue.push_back(q); });
     }
     return true;
 }
@@ -169,13 +170,15 @@ SimulatedTransport::LookupAddress(const transport::Configuration &cfg,
     // but that's why this is the simulated transport not the real
     // one... (And we only have to do this once at runtime.)
 
-
-    for (auto & kv : configurations) {
-        if (*(kv.second) == cfg) {
+    for (auto &kv : configurations)
+    {
+        if (*(kv.second) == cfg)
+        {
             // Configuration matches. Does the index?
             const SimulatedTransportAddress *addr =
                 dynamic_cast<const SimulatedTransportAddress *>(kv.first->GetAddress());
-            if (replicaIdxs[addr->addr] == idx) {
+            if (replicaIdxs[addr->addr] == idx)
+            {
                 // Matches.
                 return *addr;
             }
@@ -187,15 +190,18 @@ SimulatedTransport::LookupAddress(const transport::Configuration &cfg,
 
 SimulatedTransportAddress
 SimulatedTransport::LookupAddress(const transport::Configuration &cfg,
-                            int groupIdx,
-                            int idx)
+                                  int groupIdx,
+                                  int idx)
 {
-    for (auto & kv : configurations) {
-        if (*(kv.second) == cfg) {
+    for (auto &kv : configurations)
+    {
+        if (*(kv.second) == cfg)
+        {
             // Configuration matches. Does the index?
             const SimulatedTransportAddress *addr =
-                dynamic_cast<const SimulatedTransportAddress*>(kv.first->GetAddress());
-            if (g_replicaIdxs[groupIdx][addr->addr] == idx) {
+                dynamic_cast<const SimulatedTransportAddress *>(kv.first->GetAddress());
+            if (g_replicaIdxs[groupIdx][addr->addr] == idx)
+            {
                 // Matches.
                 return *addr;
             }
@@ -209,14 +215,15 @@ SimulatedTransport::LookupMulticastAddress(const transport::Configuration *cfg)
     return NULL;
 }
 
-void
-SimulatedTransport::Run()
+void SimulatedTransport::Run()
 {
     LookupAddresses();
 
-    do {
+    do
+    {
         // Process queue
-        while (!queue.empty()) {
+        while (!queue.empty())
+        {
             QueuedMessage &q = queue.front();
             TransportReceiver *dst = endpoints[q.dst];
             dst->ReceiveMessage(SimulatedTransportAddress(q.src), q.type, q.msg, nullptr);
@@ -224,7 +231,8 @@ SimulatedTransport::Run()
         }
 
         // If there's a timer, deliver the earliest one only
-        if (processTimers && !timers.empty()) {
+        if (processTimers && !timers.empty())
+        {
             auto iter = timers.begin();
             ASSERT(iter->second.when >= vtime);
             vtime = iter->second.when;
@@ -238,21 +246,17 @@ SimulatedTransport::Run()
     } while (!queue.empty() || (processTimers && !timers.empty()));
 }
 
-void
-SimulatedTransport::AddFilter(int id, filter_t filter)
+void SimulatedTransport::AddFilter(int id, filter_t filter)
 {
-    filters.insert(std::pair<int,filter_t>(id, filter));
+    filters.insert(std::pair<int, filter_t>(id, filter));
 }
 
-void
-SimulatedTransport::RemoveFilter(int id)
+void SimulatedTransport::RemoveFilter(int id)
 {
     filters.erase(id);
 }
 
-
-int
-SimulatedTransport::Timer(uint64_t ms, timer_callback_t cb)
+int SimulatedTransport::Timer(uint64_t ms, timer_callback_t cb)
 {
     ++lastTimerId;
     int id = lastTimerId;
@@ -264,15 +268,18 @@ SimulatedTransport::Timer(uint64_t ms, timer_callback_t cb)
     return id;
 }
 
-bool
-SimulatedTransport::CancelTimer(int id)
+bool SimulatedTransport::CancelTimer(int id)
 {
     bool found = false;
-    for (auto iter = timers.begin(); iter != timers.end();) {
-        if (iter->second.id == id) {
+    for (auto iter = timers.begin(); iter != timers.end();)
+    {
+        if (iter->second.id == id)
+        {
             found = true;
             iter = timers.erase(iter);
-        } else {
+        }
+        else
+        {
             iter++;
         }
     }
@@ -280,33 +287,33 @@ SimulatedTransport::CancelTimer(int id)
     return found;
 }
 
-void
-SimulatedTransport::CancelAllTimers()
+void SimulatedTransport::CancelAllTimers()
 {
     timers.clear();
     processTimers = false;
 }
 
-void
-SimulatedTransport::Stop(bool immediately) {
+void SimulatedTransport::Stop(bool immediately)
+{
     running = false;
 }
 
-void SimulatedTransport::DispatchTP(std::function<void*()> f, std::function<void(void*)> cb)  {
-  Panic("Unimplemented");
+void SimulatedTransport::DispatchTP(std::function<void *()> f, std::function<void(void *)> cb)
+{
+    Panic("Unimplemented");
 }
 
-bool
-SimulatedTransport::SendMessageInternal(TransportReceiver *src,
-                                        const SimulatedTransportAddress &dstAddr,
-                                        const Message &m)
+bool SimulatedTransport::SendMessageInternal(TransportReceiver *src,
+                                             const SimulatedTransportAddress &dstAddr,
+                                             const Message &m)
 {
     return true;
 }
 
 bool SimulatedTransport::SendMessageToReplica(TransportReceiver *src,
-                             int groupIdx,
-                             int replicaIdx,
-                             const google::protobuf::Message &m) {
+                                              int groupIdx,
+                                              int replicaIdx,
+                                              const google::protobuf::Message &m)
+{
     return true;
 }

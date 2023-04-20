@@ -5,6 +5,7 @@
  *   Key-value store with support for transactions with strong consistency using
  *OCC.
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013-2015 Irene Zhang <iyzhang@cs.washington.edu>
  *                     Naveen Kr. Sharma <naveenks@cs.washington.edu>
  *                     Dan R. K. Ports  <drkp@cs.washington.edu>
@@ -43,35 +44,37 @@
 #include "store/common/backend/versionstore.h"
 #include "store/common/transaction.h"
 
-namespace strongstore {
+namespace strongstore
+{
 
-class OCCStore : public TxnStore {
-   public:
-    OCCStore();
-    virtual ~OCCStore();
+    class OCCStore : public TxnStore
+    {
+    public:
+        OCCStore();
+        virtual ~OCCStore();
 
-    virtual int Get(uint64_t id, const std::string &key,
-                    std::pair<Timestamp, std::string> &value) override;
-    virtual int Prepare(uint64_t id, const Transaction &txn,
-                        std::unordered_map<uint64_t, int> &statuses) override;
-    virtual bool Commit(uint64_t id, const Timestamp &ts,
-                        std::unordered_map<uint64_t, int> &statuses) override;
-    virtual void Abort(uint64_t id,
-                       std::unordered_map<uint64_t, int> &statuses) override;
-    virtual void Load(const std::string &key, const std::string &value,
-                      const Timestamp &timestamp) override;
+        virtual int Get(uint64_t id, const std::string &key,
+                        std::pair<Timestamp, std::string> &value) override;
+        virtual int Prepare(uint64_t id, const Transaction &txn,
+                            std::unordered_map<uint64_t, int> &statuses) override;
+        virtual bool Commit(uint64_t id, const Timestamp &ts,
+                            std::unordered_map<uint64_t, int> &statuses) override;
+        virtual void Abort(uint64_t id,
+                           std::unordered_map<uint64_t, int> &statuses) override;
+        virtual void Load(const std::string &key, const std::string &value,
+                          const Timestamp &timestamp) override;
 
-   private:
-    void PrepareTransaction(uint64_t id, const Transaction &txn);
-    void Clean(uint64_t id);
+    private:
+        void PrepareTransaction(uint64_t id, const Transaction &txn);
+        void Clean(uint64_t id);
 
-    Store<std::string, std::pair<Timestamp, std::string>> store;
+        Store<std::string, std::pair<Timestamp, std::string>> store;
 
-    std::unordered_map<uint64_t, Transaction> prepared;
-    std::unordered_map<std::string, std::unordered_set<uint64_t>> pWrites;
-    std::unordered_map<std::string, std::unordered_set<uint64_t>> pRW;
-};
+        std::unordered_map<uint64_t, Transaction> prepared;
+        std::unordered_map<std::string, std::unordered_set<uint64_t>> pWrites;
+        std::unordered_map<std::string, std::unordered_set<uint64_t>> pRW;
+    };
 
-}  // namespace strongstore
+} // namespace strongstore
 
 #endif /* _STRONG_OCC_STORE_H_ */

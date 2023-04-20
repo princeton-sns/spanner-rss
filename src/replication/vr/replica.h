@@ -4,6 +4,7 @@
  * vr/replica.h:
  *   Viewstamped Replication protocol
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013 Dan R. K. Ports  <drkp@cs.washington.edu>
  *
  * Permission is hereby granted, free of charge, to any person
@@ -42,92 +43,96 @@
 #include "replication/common/replica.h"
 #include "replication/vr/vr-proto.pb.h"
 
-namespace replication {
-namespace vr {
+namespace replication
+{
+    namespace vr
+    {
 
-class VRReplica : public Replica {
-   public:
-    VRReplica(transport::Configuration config, int groupIdx, int myIdx,
-              Transport *transport, unsigned int batchSize, AppReplica *app,
-              bool debug_stats);
-    ~VRReplica();
+        class VRReplica : public Replica
+        {
+        public:
+            VRReplica(transport::Configuration config, int groupIdx, int myIdx,
+                      Transport *transport, unsigned int batchSize, AppReplica *app,
+                      bool debug_stats);
+            ~VRReplica();
 
-    void ReceiveMessage(const TransportAddress &remote, const string &type,
-                        const string &data, void *meta_data);
+            void ReceiveMessage(const TransportAddress &remote, const string &type,
+                                const string &data, void *meta_data);
 
-   private:
-    view_t view;
-    opnum_t lastCommitted;
-    opnum_t lastOp;
-    view_t lastRequestStateTransferView;
-    opnum_t lastRequestStateTransferOpnum;
-    std::list<std::pair<TransportAddress *, proto::PrepareMessage> >
-        pendingPrepares;
-    proto::PrepareMessage lastPrepare;
-    unsigned int batchSize;
-    opnum_t lastBatchEnd;
+        private:
+            view_t view;
+            opnum_t lastCommitted;
+            opnum_t lastOp;
+            view_t lastRequestStateTransferView;
+            opnum_t lastRequestStateTransferOpnum;
+            std::list<std::pair<TransportAddress *, proto::PrepareMessage>>
+                pendingPrepares;
+            proto::PrepareMessage lastPrepare;
+            unsigned int batchSize;
+            opnum_t lastBatchEnd;
 
-    Log log;
-    std::map<uint64_t, std::unique_ptr<TransportAddress> > clientAddresses;
-    struct ClientTableEntry {
-        uint64_t lastReqId;
-        bool replied;
-        proto::ReplyMessage reply;
-    };
-    std::map<uint64_t, ClientTableEntry> clientTable;
+            Log log;
+            std::map<uint64_t, std::unique_ptr<TransportAddress>> clientAddresses;
+            struct ClientTableEntry
+            {
+                uint64_t lastReqId;
+                bool replied;
+                proto::ReplyMessage reply;
+            };
+            std::map<uint64_t, ClientTableEntry> clientTable;
 
-    QuorumSet<viewstamp_t, proto::PrepareOKMessage> prepareOKQuorum;
-    QuorumSet<view_t, proto::StartViewChangeMessage> startViewChangeQuorum;
-    QuorumSet<view_t, proto::DoViewChangeMessage> doViewChangeQuorum;
+            QuorumSet<viewstamp_t, proto::PrepareOKMessage> prepareOKQuorum;
+            QuorumSet<view_t, proto::StartViewChangeMessage> startViewChangeQuorum;
+            QuorumSet<view_t, proto::DoViewChangeMessage> doViewChangeQuorum;
 
-    Timeout *viewChangeTimeout;
-    Timeout *nullCommitTimeout;
-    Timeout *stateTransferTimeout;
-    Timeout *resendPrepareTimeout;
-    Timeout *closeBatchTimeout;
+            Timeout *viewChangeTimeout;
+            Timeout *nullCommitTimeout;
+            Timeout *stateTransferTimeout;
+            Timeout *resendPrepareTimeout;
+            Timeout *closeBatchTimeout;
 
-    Latency_t rec_to_upcall_lat_;
-    Latency_t upcall_to_exec_lat_;
-    Latency_t exec_to_sent_lat_;
+            Latency_t rec_to_upcall_lat_;
+            Latency_t upcall_to_exec_lat_;
+            Latency_t exec_to_sent_lat_;
 
-    bool debug_stats_;
+            bool debug_stats_;
 
-    bool AmLeader() const;
-    void CommitUpTo(opnum_t upto);
-    void SendPrepareOKs(opnum_t oldLastOp);
-    void RequestStateTransfer();
-    void EnterView(view_t newview);
-    void StartViewChange(view_t newview);
-    void SendNullCommit();
-    void UpdateClientTable(const Request &req);
-    void ResendPrepare();
-    void CloseBatch();
+            bool AmLeader() const;
+            void CommitUpTo(opnum_t upto);
+            void SendPrepareOKs(opnum_t oldLastOp);
+            void RequestStateTransfer();
+            void EnterView(view_t newview);
+            void StartViewChange(view_t newview);
+            void SendNullCommit();
+            void UpdateClientTable(const Request &req);
+            void ResendPrepare();
+            void CloseBatch();
 
-    void HandleRequest(const TransportAddress &remote,
-                       const proto::RequestMessage &msg);
-    void HandleUnloggedRequest(const TransportAddress &remote,
-                               const proto::UnloggedRequestMessage &msg);
+            void HandleRequest(const TransportAddress &remote,
+                               const proto::RequestMessage &msg);
+            void HandleUnloggedRequest(const TransportAddress &remote,
+                                       const proto::UnloggedRequestMessage &msg);
 
-    void HandlePrepare(const TransportAddress &remote,
-                       const proto::PrepareMessage &msg);
-    void HandlePrepareOK(const TransportAddress &remote,
-                         const proto::PrepareOKMessage &msg);
-    void HandleCommit(const TransportAddress &remote,
-                      const proto::CommitMessage &msg);
-    void HandleRequestStateTransfer(
-        const TransportAddress &remote,
-        const proto::RequestStateTransferMessage &msg);
-    void HandleStateTransfer(const TransportAddress &remote,
-                             const proto::StateTransferMessage &msg);
-    void HandleStartViewChange(const TransportAddress &remote,
-                               const proto::StartViewChangeMessage &msg);
-    void HandleDoViewChange(const TransportAddress &remote,
-                            const proto::DoViewChangeMessage &msg);
-    void HandleStartView(const TransportAddress &remote,
-                         const proto::StartViewMessage &msg);
-};
+            void HandlePrepare(const TransportAddress &remote,
+                               const proto::PrepareMessage &msg);
+            void HandlePrepareOK(const TransportAddress &remote,
+                                 const proto::PrepareOKMessage &msg);
+            void HandleCommit(const TransportAddress &remote,
+                              const proto::CommitMessage &msg);
+            void HandleRequestStateTransfer(
+                const TransportAddress &remote,
+                const proto::RequestStateTransferMessage &msg);
+            void HandleStateTransfer(const TransportAddress &remote,
+                                     const proto::StateTransferMessage &msg);
+            void HandleStartViewChange(const TransportAddress &remote,
+                                       const proto::StartViewChangeMessage &msg);
+            void HandleDoViewChange(const TransportAddress &remote,
+                                    const proto::DoViewChangeMessage &msg);
+            void HandleStartView(const TransportAddress &remote,
+                                 const proto::StartViewMessage &msg);
+        };
 
-}  // namespace vr
-}  // namespace replication
+    } // namespace vr
+} // namespace replication
 
 #endif /* _VR_REPLICA_H_ */

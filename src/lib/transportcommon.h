@@ -4,6 +4,7 @@
  * transport-common.h:
  *   template support for implementing transports
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013 Dan R. K. Ports  <drkp@cs.washington.edu>
  *                Jialin Li        <lijl@cs.washington.edu>
  *
@@ -49,10 +50,10 @@ public:
         replicaAddressesInitialized = false;
     }
 
-    virtual
-    ~TransportCommon()
+    virtual ~TransportCommon()
     {
-        for (auto &kv : canonicalConfigs) {
+        for (auto &kv : canonicalConfigs)
+        {
             delete kv.second;
         }
     }
@@ -85,7 +86,8 @@ public:
         const transport::Configuration *cfg = configurations[src];
         ASSERT(cfg != NULL);
 
-        if (!replicaAddressesInitialized) {
+        if (!replicaAddressesInitialized)
+        {
             LookupAddresses();
         }
 
@@ -101,12 +103,14 @@ public:
         const transport::Configuration *cfg = configurations[src];
         ASSERT(cfg != NULL);
 
-        if (!replicaAddressesInitialized) {
+        if (!replicaAddressesInitialized)
+        {
             LookupAddresses();
         }
 
         auto kv = fcAddresses.find(cfg);
-        if (kv == fcAddresses.end()) {
+        if (kv == fcAddresses.end())
+        {
             Panic("Configuration has no failure coordinator address");
         }
 
@@ -122,7 +126,8 @@ public:
         const transport::Configuration *cfg = configurations[src];
         ASSERT(cfg != NULL);
 
-        if (!replicaAddressesInitialized) {
+        if (!replicaAddressesInitialized)
+        {
             LookupAddresses();
         }
 
@@ -136,17 +141,22 @@ public:
         const transport::Configuration *cfg = configurations[src];
         ASSERT(cfg != NULL);
 
-        if (!replicaAddressesInitialized) {
+        if (!replicaAddressesInitialized)
+        {
             LookupAddresses();
         }
 
         const ADDR *srcAddr = dynamic_cast<const ADDR *>(src->GetAddress());
-        for (auto & kv : replicaAddresses[cfg]) {
-            for (auto & kv2 : kv.second) {
-                if (*srcAddr == kv2.second) {
+        for (auto &kv : replicaAddresses[cfg])
+        {
+            for (auto &kv2 : kv.second)
+            {
+                if (*srcAddr == kv2.second)
+                {
                     continue;
                 }
-                if (!SendMessageInternal(src, kv2.second, m)) {
+                if (!SendMessageInternal(src, kv2.second, m))
+                {
                     return false;
                 }
             }
@@ -170,29 +180,36 @@ public:
         const transport::Configuration *cfg = configurations[src];
         ASSERT(cfg != NULL);
 
-        if (!replicaAddressesInitialized) {
+        if (!replicaAddressesInitialized)
+        {
             LookupAddresses();
         }
-        
+
         int srcGroup = -1;
         auto replicaGroupsItr = replicaGroups.find(src);
-        if (replicaGroupsItr != replicaGroups.end()) {
-          srcGroup = replicaGroupsItr->second;
+        if (replicaGroupsItr != replicaGroups.end())
+        {
+            srcGroup = replicaGroupsItr->second;
         }
 
         const ADDR *srcAddr;
-        if (srcGroup != -1) {
-          srcAddr = dynamic_cast<const ADDR *>(src->GetAddress());
+        if (srcGroup != -1)
+        {
+            srcAddr = dynamic_cast<const ADDR *>(src->GetAddress());
         }
 
-        for (int groupIdx : groups) {
-            for (auto & kv : replicaAddresses[cfg][groupIdx]) {
-                if (srcGroup != -1 && *srcAddr == kv.second) {
+        for (int groupIdx : groups)
+        {
+            for (auto &kv : replicaAddresses[cfg][groupIdx])
+            {
+                if (srcGroup != -1 && *srcAddr == kv.second)
+                {
                     Debug("skipping");
                     continue;
                 }
                 Debug("sending");
-                if (!SendMessageInternal(src, kv.second, m)) {
+                if (!SendMessageInternal(src, kv.second, m))
+                {
                     return false;
                 }
             }
@@ -211,13 +228,17 @@ protected:
     LookupMulticastAddress(const transport::Configuration *cfg) = 0;
 
     std::unordered_map<transport::Configuration,
-        transport::Configuration *> canonicalConfigs;
+                       transport::Configuration *>
+        canonicalConfigs;
     std::map<TransportReceiver *,
-        transport::Configuration *> configurations;
+             transport::Configuration *>
+        configurations;
     std::map<const transport::Configuration *,
-        std::map<int, std::map<int, ADDR> > > replicaAddresses; // config->groupid->replicaid->ADDR
+             std::map<int, std::map<int, ADDR>>>
+        replicaAddresses; // config->groupid->replicaid->ADDR
     std::map<const transport::Configuration *,
-        std::map<int, std::map<int, TransportReceiver *> > > replicaReceivers;
+             std::map<int, std::map<int, TransportReceiver *>>>
+        replicaReceivers;
     std::map<const transport::Configuration *, ADDR> multicastAddresses;
     std::map<const transport::Configuration *, ADDR> fcAddresses;
     std::map<TransportReceiver *, int> replicaGroups;
@@ -228,16 +249,17 @@ protected:
     RegisterConfiguration(TransportReceiver *receiver,
                           const transport::Configuration &config,
                           int groupIdx,
-                          int replicaIdx) {
+                          int replicaIdx)
+    {
         ASSERT(receiver != NULL);
 
         // Have we seen this configuration before? If so, get a
         // pointer to the canonical copy; if not, create one. This
         // allows us to use that pointer as a key in various
         // structures.
-        transport::Configuration *canonical
-            = canonicalConfigs[config];
-        if (canonical == NULL) {
+        transport::Configuration *canonical = canonicalConfigs[config];
+        if (canonical == NULL)
+        {
             canonical = new transport::Configuration(config);
             canonicalConfigs[config] = canonical;
         }
@@ -245,7 +267,8 @@ protected:
         configurations[receiver] = canonical;
 
         // If this is a replica, record the receiver
-        if (replicaIdx != -1) {
+        if (replicaIdx != -1)
+        {
             ASSERT(groupIdx != -1);
             replicaReceivers[canonical][groupIdx][replicaIdx] = receiver;
         }
@@ -269,20 +292,25 @@ protected:
 
         // For every configuration, look up all addresses and cache
         // them.
-        for (auto &kv : canonicalConfigs) {
+        for (auto &kv : canonicalConfigs)
+        {
             transport::Configuration *cfg = kv.second;
 
-            for (int i = 0; i < cfg->g; i++) {
-                for (int j = 0; j < cfg->n; j++) {
+            for (int i = 0; i < cfg->g; i++)
+            {
+                for (int j = 0; j < cfg->n; j++)
+                {
                     const ADDR addr = LookupAddress(*cfg, i, j);
                     replicaAddresses[cfg][i].insert(std::make_pair(j, addr));
                 }
             }
 
             // And check if there's a multicast address
-            if (cfg->multicast()) {
+            if (cfg->multicast())
+            {
                 const ADDR *addr = LookupMulticastAddress(cfg);
-                if (addr) {
+                if (addr)
+                {
                     multicastAddresses.insert(std::make_pair(cfg, *addr));
                     delete addr;
                 }

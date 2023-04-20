@@ -1,3 +1,31 @@
+/***********************************************************************
+ *
+ * store/benchmark/async/common/zipf_key_selector.cc:
+ *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use, copy,
+ * modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ **********************************************************************/
+
 #include "store/benchmark/async/common/zipf_key_selector.h"
 
 #include <cmath>
@@ -11,21 +39,26 @@ ZipfKeySelector::ZipfKeySelector(const std::vector<std::string> &keys,
       h_integral_x1_{h_integral(1.5) - 1},
       h_integral_num_elements_{h_integral(num_elements_ + F_1_2)},
       s_{2 - h_integral_inv(h_integral(2.5) - h(2))},
-      dis_{0.0, 1.0} {
-    if (keys.size() <= 0) {
+      dis_{0.0, 1.0}
+{
+    if (keys.size() <= 0)
+    {
         throw std::invalid_argument(
             "number of elements is not strictly positive: " +
             std::to_string(keys.size()));
     }
 
-    if (exponent <= 0) {
+    if (exponent <= 0)
+    {
         throw std::invalid_argument("exponent is not strictly positive: " +
                                     std::to_string(exponent));
     }
 }
 
-int ZipfKeySelector::GetKey(std::mt19937 &rand) {
-    while (true) {
+int ZipfKeySelector::GetKey(std::mt19937 &rand)
+{
+    while (true)
+    {
         const double u = h_integral_num_elements_ +
                          U(rand) * (h_integral_x1_ - h_integral_num_elements_);
         // u is uniformly distributed in (h_integral_x1_,
@@ -36,9 +69,12 @@ int ZipfKeySelector::GetKey(std::mt19937 &rand) {
 
         // Limit k to the range [1, num_elements_] if it would be outside
         // due to numerical inaccuracies.
-        if (k < 1) {
+        if (k < 1)
+        {
             k = 1;
-        } else if (k > num_elements_) {
+        }
+        else if (k > num_elements_)
+        {
             k = num_elements_;
         }
 
@@ -51,7 +87,8 @@ int ZipfKeySelector::GetKey(std::mt19937 &rand) {
         //
         //   where C = 1 / (h_integral_num_elements_ - h_integral_x1_)
 
-        if (k - x <= s_ || u >= h_integral(k + F_1_2) - h(k)) {
+        if (k - x <= s_ || u >= h_integral(k + F_1_2) - h(k))
+        {
             // Case k = 1:
             //
             //   The right inequality is always true, because replacing k by
@@ -100,18 +137,22 @@ int ZipfKeySelector::GetKey(std::mt19937 &rand) {
 
 double ZipfKeySelector::U(std::mt19937 &rand) { return dis_(rand); }
 
-double ZipfKeySelector::h_integral(const double x) {
+double ZipfKeySelector::h_integral(const double x)
+{
     const double logX = std::log(x);
     return helper2((1 - exponent_) * logX) * logX;
 }
 
-double ZipfKeySelector::h(const double x) {
+double ZipfKeySelector::h(const double x)
+{
     return std::exp(-exponent_ * std::log(x));
 }
 
-double ZipfKeySelector::h_integral_inv(const double x) {
+double ZipfKeySelector::h_integral_inv(const double x)
+{
     double t = x * (1 - exponent_);
-    if (t < -1) {
+    if (t < -1)
+    {
         // Limit value to the range [-1, +inf).
         // t could be smaller than -1 in some rare cases due to numerical
         // errors.
@@ -120,18 +161,26 @@ double ZipfKeySelector::h_integral_inv(const double x) {
     return std::exp(helper1(t) * x);
 }
 
-inline double ZipfKeySelector::helper1(const double x) {
-    if (std::abs(x) > TAYLOR_THRESHOLD) {
+inline double ZipfKeySelector::helper1(const double x)
+{
+    if (std::abs(x) > TAYLOR_THRESHOLD)
+    {
         return std::log1p(x) / x;
-    } else {
+    }
+    else
+    {
         return 1 - x * (F_1_2 - x * (F_1_3 - F_1_4 * x));
     }
 }
 
-inline double ZipfKeySelector::helper2(const double x) {
-    if (std::abs(x) > TAYLOR_THRESHOLD) {
+inline double ZipfKeySelector::helper2(const double x)
+{
+    if (std::abs(x) > TAYLOR_THRESHOLD)
+    {
         return std::expm1(x) / x;
-    } else {
+    }
+    else
+    {
         return 1 + x * F_1_2 * (1 + x * F_1_3 * (1 + F_1_4 * x));
     }
 }

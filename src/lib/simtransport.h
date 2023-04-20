@@ -4,6 +4,7 @@
  * simtransport.h:
  *   simulated message-passing interface for testing use
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013-2015 Irene Zhang <iyzhang@cs.washington.edu>
  *                     Naveen Kr. Sharma <naveenks@cs.washington.edu>
  *                     Dan R. K. Ports  <drkp@cs.washington.edu>
@@ -40,28 +41,31 @@
 #include "lib/transport.h"
 #include "lib/transportcommon.h"
 
-class SimulatedTransportAddress : public TransportAddress {
-   public:
+class SimulatedTransportAddress : public TransportAddress
+{
+public:
     SimulatedTransportAddress *clone() const;
     SimulatedTransportAddress(int addr);
     int GetAddr() const;
     bool operator==(const SimulatedTransportAddress &other) const;
-    inline bool operator!=(const SimulatedTransportAddress &other) const {
+    inline bool operator!=(const SimulatedTransportAddress &other) const
+    {
         return !(*this == other);
     }
 
-   private:
+private:
     int addr;
     friend class SimulatedTransport;
 };
 
-class SimulatedTransport : public TransportCommon<SimulatedTransportAddress> {
+class SimulatedTransport : public TransportCommon<SimulatedTransportAddress>
+{
     typedef std::function<bool(TransportReceiver *, int,
                                TransportReceiver *, int,
                                Message &, uint64_t &delay)>
         filter_t;
 
-   public:
+public:
     SimulatedTransport();
     ~SimulatedTransport();
     void Register(TransportReceiver *receiver,
@@ -81,7 +85,7 @@ class SimulatedTransport : public TransportCommon<SimulatedTransportAddress> {
 
     void DispatchTP(std::function<void *()> f, std::function<void(void *)> cb);
 
-   protected:
+protected:
     bool SendMessageInternal(TransportReceiver *src,
                              const SimulatedTransportAddress &dstAddr,
                              const Message &m,
@@ -102,8 +106,9 @@ class SimulatedTransport : public TransportCommon<SimulatedTransportAddress> {
                              const SimulatedTransportAddress &dstAddr,
                              const Message &m) override;
 
-   private:
-    struct QueuedMessage {
+private:
+    struct QueuedMessage
+    {
         int dst;
         int src;
         string type;
@@ -111,7 +116,8 @@ class SimulatedTransport : public TransportCommon<SimulatedTransportAddress> {
         inline QueuedMessage(int dst, int src,
                              const string &type, const string &msg) : dst(dst), src(src), type(type), msg(msg) {}
     };
-    struct PendingTimer {
+    struct PendingTimer
+    {
         uint64_t when;
         int id;
         timer_callback_t cb;
@@ -132,4 +138,4 @@ class SimulatedTransport : public TransportCommon<SimulatedTransportAddress> {
     bool running;
 };
 
-#endif  // _LIB_SIMTRANSPORT_H_
+#endif // _LIB_SIMTRANSPORT_H_

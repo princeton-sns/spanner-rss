@@ -4,6 +4,7 @@
  * store/common/frontend/bufferclient.cc:
  *   Single shard buffering client implementation.
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2015 Irene Zhang <iyzhang@cs.washington.edu>
  *
  * Permission is hereby granted, free of charge, to any person
@@ -38,7 +39,8 @@ BufferClient::BufferClient(TxnClient *txnclient, bool bufferPuts)
 BufferClient::~BufferClient() {}
 
 /* Begins a transaction. */
-void BufferClient::Begin(uint64_t tid) {
+void BufferClient::Begin(uint64_t tid)
+{
     // Initialize data structures.
     txn = Transaction();
     readSet.clear();
@@ -47,15 +49,18 @@ void BufferClient::Begin(uint64_t tid) {
 }
 
 void BufferClient::Get(const std::string &key, get_callback gcb,
-                       get_timeout_callback gtcb, uint32_t timeout) {
+                       get_timeout_callback gtcb, uint32_t timeout)
+{
     // Read your own writes, check the write set first.
-    if (txn.getWriteSet().find(key) != txn.getWriteSet().end()) {
+    if (txn.getWriteSet().find(key) != txn.getWriteSet().end())
+    {
         gcb(REPLY_OK, key, (txn.getWriteSet().find(key))->second, Timestamp());
         return;
     }
 
     // Consistent reads, check the read set.
-    if (txn.getReadSet().find(key) != txn.getReadSet().end()) {
+    if (txn.getReadSet().find(key) != txn.getReadSet().end())
+    {
         auto readSetItr = readSet.find(key);
         ASSERT(readSetItr != readSet.end());
         gcb(REPLY_OK, key, std::get<0>(readSetItr->second),
@@ -65,7 +70,8 @@ void BufferClient::Get(const std::string &key, get_callback gcb,
 
     get_callback bufferCb = [this, gcb](int status, const std::string &key,
                                         const std::string &value,
-                                        Timestamp ts) {
+                                        Timestamp ts)
+    {
         // TODO: we still need to add a "failed" read to the read set
         //   (where failed ==> successful rpc, but no value exists for key)
         // if (status == REPLY_OK) {
@@ -80,15 +86,18 @@ void BufferClient::Get(const std::string &key, get_callback gcb,
 
 void BufferClient::Get(const std::string &key, const Timestamp &ts,
                        get_callback gcb, get_timeout_callback gtcb,
-                       uint32_t timeout) {
+                       uint32_t timeout)
+{
     // Read your own writes, check the write set first.
-    if (txn.getWriteSet().find(key) != txn.getWriteSet().end()) {
+    if (txn.getWriteSet().find(key) != txn.getWriteSet().end())
+    {
         gcb(REPLY_OK, key, (txn.getWriteSet().find(key))->second, Timestamp());
         return;
     }
 
     // Consistent reads, check the read set.
-    if (txn.getReadSet().find(key) != txn.getReadSet().end()) {
+    if (txn.getReadSet().find(key) != txn.getReadSet().end())
+    {
         auto readSetItr = readSet.find(key);
         ASSERT(readSetItr != readSet.end());
         gcb(REPLY_OK, key, std::get<0>(readSetItr->second),
@@ -98,7 +107,8 @@ void BufferClient::Get(const std::string &key, const Timestamp &ts,
 
     get_callback bufferCb = [this, gcb](int status, const std::string &key,
                                         const std::string &value,
-                                        Timestamp ts) {
+                                        Timestamp ts)
+    {
         // TODO: we still need to add a "failed" read to the read set
         //   (where failed ==> successful rpc, but no value exists for key)
         // if (status == REPLY_OK) {
@@ -113,15 +123,18 @@ void BufferClient::Get(const std::string &key, const Timestamp &ts,
 
 void BufferClient::GetForUpdate(const std::string &key, const Timestamp &ts,
                                 get_callback gcb, get_timeout_callback gtcb,
-                                uint32_t timeout) {
+                                uint32_t timeout)
+{
     // Read your own writes, check the write set first.
-    if (txn.getWriteSet().find(key) != txn.getWriteSet().end()) {
+    if (txn.getWriteSet().find(key) != txn.getWriteSet().end())
+    {
         gcb(REPLY_OK, key, (txn.getWriteSet().find(key))->second, Timestamp());
         return;
     }
 
     // Consistent reads, check the read set.
-    if (txn.getReadSet().find(key) != txn.getReadSet().end()) {
+    if (txn.getReadSet().find(key) != txn.getReadSet().end())
+    {
         auto readSetItr = readSet.find(key);
         ASSERT(readSetItr != readSet.end());
         gcb(REPLY_OK, key, std::get<0>(readSetItr->second),
@@ -131,7 +144,8 @@ void BufferClient::GetForUpdate(const std::string &key, const Timestamp &ts,
 
     get_callback bufferCb = [this, gcb](int status, const std::string &key,
                                         const std::string &value,
-                                        Timestamp ts) {
+                                        Timestamp ts)
+    {
         // TODO: we still need to add a "failed" read to the read set
         //   (where failed ==> successful rpc, but no value exists for key)
         // if (status == REPLY_OK) {
@@ -146,37 +160,48 @@ void BufferClient::GetForUpdate(const std::string &key, const Timestamp &ts,
 
 void BufferClient::Put(const std::string &key, const std::string &value,
                        put_callback pcb, put_timeout_callback ptcb,
-                       uint32_t timeout) {
+                       uint32_t timeout)
+{
     txn.addWriteSet(key, value);
-    if (bufferPuts) {
+    if (bufferPuts)
+    {
         pcb(REPLY_OK, key, value);
-    } else {
+    }
+    else
+    {
         txnclient->Put(tid, key, value, pcb, ptcb, timeout);
     }
 }
 
 void BufferClient::Put(const std::string &key, const std::string &value,
                        const Timestamp &ts, put_callback pcb,
-                       put_timeout_callback ptcb, uint32_t timeout) {
+                       put_timeout_callback ptcb, uint32_t timeout)
+{
     txn.addWriteSet(key, value);
-    if (bufferPuts) {
+    if (bufferPuts)
+    {
         pcb(REPLY_OK, key, value);
-    } else {
+    }
+    else
+    {
         txnclient->Put(tid, key, value, ts, pcb, ptcb, timeout);
     }
 }
 
 void BufferClient::Prepare(const Timestamp &timestamp, prepare_callback pcb,
-                           prepare_timeout_callback ptcb, uint32_t timeout) {
+                           prepare_timeout_callback ptcb, uint32_t timeout)
+{
     txnclient->Prepare(tid, txn, timestamp, pcb, ptcb, timeout);
 }
 
 void BufferClient::Commit(const Timestamp &ts, commit_callback ccb,
-                          commit_timeout_callback ctcb, uint32_t timeout) {
+                          commit_timeout_callback ctcb, uint32_t timeout)
+{
     txnclient->Commit(tid, txn, ts, ccb, ctcb, timeout);
 }
 
 void BufferClient::Abort(abort_callback acb, abort_timeout_callback atcb,
-                         uint32_t timeout) {
+                         uint32_t timeout)
+{
     txnclient->Abort(tid, txn, acb, atcb, timeout);
 }

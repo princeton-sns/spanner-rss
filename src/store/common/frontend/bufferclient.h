@@ -4,6 +4,7 @@
  * store/common/frontend/bufferclient.h:
  *   Single shard buffering client implementation.
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2015 Irene Zhang <iyzhang@cs.washington.edu>
  *
  * Permission is hereby granted, free of charge, to any person
@@ -38,8 +39,9 @@
 #include "store/common/promise.h"
 #include "store/common/transaction.h"
 
-class BufferClient {
-   public:
+class BufferClient
+{
+public:
     BufferClient(TxnClient *txnclient, bool bufferPuts = true);
     virtual ~BufferClient();
 
@@ -78,7 +80,7 @@ class BufferClient {
     virtual void Abort(abort_callback acb, abort_timeout_callback atcb,
                        uint32_t timeout);
 
-   protected:
+protected:
     // Underlying single shard transaction client implementation.
     TxnClient *txnclient;
     const bool bufferPuts;

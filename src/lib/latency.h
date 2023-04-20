@@ -4,6 +4,7 @@
  * latency.h:
  *   latency profiling functions
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013 Dan R. K. Ports  <drkp@cs.washington.edu>
  * Copyright 2009-2012 Massachusetts Institute of Technology
  *
@@ -57,19 +58,22 @@
 // The number of histogram buckets.
 #define LATENCY_NUM_BUCKETS 65
 
-typedef struct Latency_Frame_t {
+typedef struct Latency_Frame_t
+{
     struct timespec start;
     uint64_t accum;
     struct Latency_Frame_t *parent;
 } Latency_Frame_t;
 
-typedef struct Latency_Dist_t {
+typedef struct Latency_Dist_t
+{
     uint64_t min, max, total, count;
     uint32_t buckets[LATENCY_NUM_BUCKETS];
     char type;
 } Latency_Dist_t;
 
-typedef struct Latency_t {
+typedef struct Latency_t
+{
     const char *name;
 
     Latency_Dist_t *dists[LATENCY_MAX_DIST];
@@ -82,10 +86,11 @@ typedef struct Latency_t {
     struct Latency_t *next;
 } Latency_t;
 
-#define DEFINE_LATENCY(name)                                        \
-    static Latency_t name;                                          \
-    static __attribute__((constructor)) void _##name##_init(void) { \
-        _Latency_Init(&name, #name);                                \
+#define DEFINE_LATENCY(name)                                      \
+    static Latency_t name;                                        \
+    static __attribute__((constructor)) void _##name##_init(void) \
+    {                                                             \
+        _Latency_Init(&name, #name);                              \
     }
 
 void _Latency_Init(Latency_t *l, const char *name);
@@ -100,7 +105,8 @@ uint64_t _Latency_EndRecType(Latency_t *l, Latency_Frame_t *fr, char type);
 void _Latency_Resume(Latency_Frame_t *fr);
 void _Latency_Pause(Latency_Frame_t *fr);
 
-static inline void _Latency_EndRec(Latency_t *l, Latency_Frame_t *fr) {
+static inline void _Latency_EndRec(Latency_t *l, Latency_Frame_t *fr)
+{
     _Latency_EndRecType(l, fr, '=');
 }
 
@@ -115,22 +121,26 @@ void Latency_Put(Latency_t *l, ::transport::latency::format::Latency &out);
 bool Latency_TryGet(const ::transport::latency::format::Latency &in,
                     Latency_t *l);
 
-static inline void Latency_Start(Latency_t *l) {
+static inline void Latency_Start(Latency_t *l)
+{
     Latency_StartRec(l, &l->defaultFrame);
 }
 
-static inline uint64_t Latency_EndRec(Latency_t *l, Latency_Frame_t *fr) {
+static inline uint64_t Latency_EndRec(Latency_t *l, Latency_Frame_t *fr)
+{
     return Latency_EndRecType(l, fr, '=');
 }
 
-static inline uint64_t Latency_EndType(Latency_t *l, char type) {
+static inline uint64_t Latency_EndType(Latency_t *l, char type)
+{
     return Latency_EndRecType(l, &l->defaultFrame, type);
 }
 
-static inline uint64_t Latency_End(Latency_t *l) {
+static inline uint64_t Latency_End(Latency_t *l)
+{
     return Latency_EndRec(l, &l->defaultFrame);
 }
 
 char *LatencyFmtNS(uint64_t ns, char *buf);
 
-#endif  // _LIB_LATENCY_H_
+#endif // _LIB_LATENCY_H_

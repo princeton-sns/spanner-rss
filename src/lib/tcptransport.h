@@ -5,6 +5,7 @@
  *   message-passing network interface that uses UDP message delivery
  *   and libasync
  *
+ * Copyright 2022 Jeffrey Helt, Matthew Burke, Amit Levy, Wyatt Lloyd
  * Copyright 2013 Dan R. K. Ports  <drkp@cs.washington.edu>
  *
  * Permission is hereby granted, free of charge, to any person
@@ -38,22 +39,23 @@
 // #include "lib/latency.h"
 // #include "lib/threadpool.h"
 
-#include <event2/event.h>
 #include <event2/buffer.h>
 #include <event2/bufferevent.h>
+#include <event2/event.h>
 
-#include <map>
-#include <unordered_map>
 #include <list>
-#include <random>
+#include <map>
 #include <mutex>
 #include <netinet/in.h>
+#include <random>
+#include <unordered_map>
 
 class TCPTransportAddress : public TransportAddress
 {
 public:
-    TCPTransportAddress * clone() const;
+    TCPTransportAddress *clone() const;
     sockaddr_in addr;
+
 private:
     TCPTransportAddress(const sockaddr_in &addr);
 
@@ -70,12 +72,12 @@ class TCPTransport : public TransportCommon<TCPTransportAddress>
 {
 public:
     TCPTransport(double dropRate = 0.0, double reogrderRate = 0.0,
-                    int dscp = 0, bool handleSignals = true);
+                 int dscp = 0, bool handleSignals = true);
     virtual ~TCPTransport();
     virtual void Register(TransportReceiver *receiver,
-                  const transport::Configuration &config,
-                  int groupIdx,
-                  int replicaIdx) override;
+                          const transport::Configuration &config,
+                          int groupIdx,
+                          int replicaIdx) override;
 
     virtual void Run() override;
     virtual void Stop() override;
@@ -86,7 +88,7 @@ public:
     virtual void CancelAllTimers() override;
     virtual void Flush() override;
 
-    void DispatchTP(std::function<void*()> f, std::function<void(void*)> cb);
+    void DispatchTP(std::function<void *()> f, std::function<void(void *)> cb);
 
     TCPTransportAddress
     LookupAddress(const transport::Configuration &cfg,
@@ -100,13 +102,12 @@ public:
     TCPTransportAddress
     LookupAddress(const transport::ReplicaAddress &addr);
 
-
 private:
     int TimerInternal(struct timeval &tv, timer_callback_t cb);
     std::mutex mtx;
     struct TCPTransportTimerInfo
     {
-        TCPTransportTimerInfo(timer_callback_t &&cb) : cb(std::move(cb)) { } 
+        TCPTransportTimerInfo(timer_callback_t &&cb) : cb(std::move(cb)) {}
         timer_callback_t cb;
         TCPTransport *transport;
         event *ev;
@@ -125,8 +126,8 @@ private:
     event_base *libeventBase;
     std::vector<event *> listenerEvents;
     std::vector<event *> signalEvents;
-    std::map<int, TransportReceiver*> receivers; // fd -> receiver
-    std::map<TransportReceiver*, int> fds; // receiver -> fd
+    std::map<int, TransportReceiver *> receivers; // fd -> receiver
+    std::map<TransportReceiver *, int> fds;       // receiver -> fd
     int lastTimerId;
     std::unordered_map<int, TCPTransportTimerInfo *> timers;
     std::list<TCPTransportTCPListener *> tcpListeners;
@@ -137,13 +138,13 @@ private:
     bool stopped;
 
     virtual bool SendMessageInternal(TransportReceiver *src,
-                             const TCPTransportAddress &dst,
-                             const Message &m) override;
+                                     const TCPTransportAddress &dst,
+                                     const Message &m) override;
     virtual const TCPTransportAddress *
-    LookupMulticastAddress(const transport::Configuration*config) override {
-      return nullptr;
+    LookupMulticastAddress(const transport::Configuration *config) override
+    {
+        return nullptr;
     };
-
 
     void ConnectTCP(const std::pair<TCPTransportAddress, TransportReceiver *> &dstSrc);
     void OnTimer(TCPTransportTimerInfo *info);
@@ -165,4 +166,4 @@ private:
                                          short what, void *arg);
 };
 
-#endif  // _LIB_TCPTRANSPORT_H_
+#endif // _LIB_TCPTRANSPORT_H_
