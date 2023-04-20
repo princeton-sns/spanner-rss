@@ -17,7 +17,41 @@ implementation of our Spanner-RSS variant, and scripts to run the experiments
 presented in our paper.
 
 ## Compiling & Running
-Directions coming soon!
+
+### Tool Versions
+
+We've built and run the spanner-rss with the following compiler tools:
+* cmake v3.10.2
+* gcc/g++ v7.5.0
+* python v3.6.9
+* gnuplot v5.2
+
+### Running experiments
+
+Experiments for the paper were run on CloudLab using the
+[spanner-rss](https://www.cloudlab.us/p/cops/spanner-rss) profile.
+After starting an experiment,
+
+1. Clone the experiment repository to one of the CloudLab machines. (We often use `client-0-0`.)  
+   `$ git clone --recursive https://github.com/princeton-sns/spanner-rss.git`
+
+2. Build the C++ benchmark and server.  
+   `$ cd spanner-rss/src/ && mkdir build && cd build`  
+   `$ cmake .. && make`
+
+3. Install experiment script dependencies.  
+   `$ sudo apt update && sudo apt install -y python3-numpy gnuplot`
+
+4. Update experiment config. You will likely need to update the following fields:
+   - `project_name`
+   - `experiment_name`
+   - `base_local_exp_directory`
+   - `base_remote_bin_directory_nfs`
+   - `src_directory`
+   - `src_commit_hash`
+
+5. After updating the config file, you can run the experiment using a python3 script. For example,  
+   `$ python3 ./experiments/run_multiple_experiments.py experiments/configs/retwis-wan-tput-lat-zipf-0.7.json`
 
 ## Authors
 Jeffrey Helt, Amit Levy, Wyatt Lloyd -- Princeton University
